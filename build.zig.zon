@@ -3,6 +3,10 @@
 	.version = "0.0.0",
 	.paths = .{""},
 	.dependencies = .{
+		.glfw = .{
+			.url = "https://github.com/glfw/glfw/archive/refs/tags/3.4.tar.gz",
+			.hash = "1220c46ebcac607065f942193b82a21b87213fca4b0d50c83461f8f5e22955fcb88f",
+		},
 		.harfbuzz = .{
 			.url = "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/8.2.2.tar.gz",
 			.hash = "1220d27d0e3ddd47705cbe1505076058cb41649336d35ea51369ec8f042c35991e0f",

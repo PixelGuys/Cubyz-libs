@@ -12,9 +12,11 @@ const targets: []const std.Target.Query = &.{
 };
 
 fn addPackageCSourceFiles(exe: *std.Build.Step.Compile, dep: *std.Build.Dependency, files: []const []const u8, flags: []const []const u8) void {
-	for(files) |file| {
-		exe.addCSourceFile(.{ .file =  dep.path(file), .flags = flags});
-	}
+	exe.addCSourceFiles(.{
+		.root = dep.path(""),
+		.files = files,
+		.flags = flags,
+	});
 }
 
 const freetypeSources = [_][]const u8{
@@ -63,12 +65,9 @@ const freetypeSources = [_][]const u8{
 };
 
 // Inlines are necessaryb to preserve comptime status of flags.
-pub inline fn addPortAudio(b: *std.Build, c_lib: *std.Build.Step.Compile, target:std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) void {
+pub inline fn addPortAudio(b: *std.Build, c_lib: *std.Build.Step.Compile, target:std.Build.ResolvedTarget, flags: []const []const u8) void {
 	// compile portaudio from source:
-	const portaudio = b.dependency("portaudio", .{
-		.target = target,
-		.optimize = optimize,
-	});
+	const portaudio = b.dependency("portaudio", .{});
 	c_lib.addIncludePath(portaudio.path("include"));
 	c_lib.installHeadersDirectory(portaudio.path("include"), "", .{});
 	c_lib.addIncludePath(portaudio.path("src/common"));
@@ -105,15 +104,9 @@ pub inline fn addPortAudio(b: *std.Build, c_lib: *std.Build.Step.Compile, target
 	}
 }
 
-pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) void {
-	const freetype = b.dependency("freetype", .{
-		.target = target,
-		.optimize = optimize,
-	});
-	const harfbuzz = b.dependency("harfbuzz", .{
-		.target = target,
-		.optimize = optimize,
-	});
+pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
+	const freetype = b.dependency("freetype", .{});
+	const harfbuzz = b.dependency("harfbuzz", .{});
 
 	c_lib.defineCMacro("FT2_BUILD_LIBRARY", "1");
 	c_lib.defineCMacro("HAVE_UNISTD_H", "1");
@@ -132,38 +125,61 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 	c_lib.linkLibCpp();
 }
 
-pub inline fn addGLFWSources(c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
-	if(target.result.os.tag == .windows) {
-		c_lib.addCSourceFiles(.{.files = &[_][]const u8 {
-			"lib/glfw/src/win32_init.c", "lib/glfw/src/win32_joystick.c", "lib/glfw/src/win32_monitor.c", "lib/glfw/src/win32_time.c", "lib/glfw/src/win32_thread.c", "lib/glfw/src/win32_window.c", "lib/glfw/src/wgl_context.c", "lib/glfw/src/egl_context.c", "lib/glfw/src/osmesa_context.c", "lib/glfw/src/context.c", "lib/glfw/src/init.c", "lib/glfw/src/input.c", "lib/glfw/src/monitor.c", "lib/glfw/src/vulkan.c", "lib/glfw/src/window.c"
-		}, .flags = flags ++ &[_][]const u8{"-std=c99", "-D_GLFW_WIN32"}});
-	} else if(target.result.os.tag == .linux) {
-		// TODO: if(isWayland) {
-		//	c_lib.addCSourceFiles(&[_][]const u8 {
-		//		"lib/glfw/src/linux_joystick.c", "lib/glfw/src/wl_init.c", "lib/glfw/src/wl_monitor.c", "lib/glfw/src/wl_window.c", "lib/glfw/src/posix_time.c", "lib/glfw/src/posix_thread.c", "lib/glfw/src/xkb_unicode.c", "lib/glfw/src/egl_context.c", "lib/glfw/src/osmesa_context.c", "lib/glfw/src/context.c", "lib/glfw/src/init.c", "lib/glfw/src/input.c", "lib/glfw/src/monitor.c", "lib/glfw/src/vulkan.c", "lib/glfw/src/window.c"
-		//	}, &[_][]const u8{"-g",});
-		//} else {
-			c_lib.addCSourceFiles(.{.files = &[_][]const u8 {
-				"lib/glfw/src/linux_joystick.c", "lib/glfw/src/x11_init.c", "lib/glfw/src/x11_monitor.c", "lib/glfw/src/x11_window.c", "lib/glfw/src/xkb_unicode.c", "lib/glfw/src/posix_time.c", "lib/glfw/src/posix_thread.c", "lib/glfw/src/glx_context.c", "lib/glfw/src/egl_context.c", "lib/glfw/src/osmesa_context.c", "lib/glfw/src/context.c", "lib/glfw/src/init.c", "lib/glfw/src/input.c", "lib/glfw/src/monitor.c", "lib/glfw/src/vulkan.c", "lib/glfw/src/window.c"
-			}, .flags = flags ++ &[_][]const u8{"-std=c99", "-D_GLFW_X11"}});
-		//}
-	} else if(target.result.os.tag == .macos) {
-		// Building for Zink requires EGL and COCOA, while LLVMpipe needs X11.
-		// I could offer both as target options, but Zink is nowhere near ready.
-		c_lib.addCSourceFiles(
-			.{.files = &[_][]const u8 {
-				"lib/glfw/src/context.c", "lib/glfw/src/init.c", "lib/glfw/src/input.c", "lib/glfw/src/monitor.c", "lib/glfw/src/vulkan.c", "lib/glfw/src/window.c", "lib/glfw/src/posix_thread.c",
-				"lib/glfw/src/posix_time.c",
-				"lib/glfw/src/egl_context.c",
-				"lib/glfw/src/null_joystick.c", "lib/glfw/src/osmesa_context.c",
-				"lib/glfw/src/x11_init.c", "lib/glfw/src/x11_monitor.c", "lib/glfw/src/x11_window.c", "lib/glfw/src/xkb_unicode.c", "lib/glfw/src/glx_context.c"
-			},
-			.flags = flags ++ &[_][]const u8{
-			"-std=c99",
-			"-D_GLFW_X11"
-		}});
-	} else {
-		std.log.err("Unsupported target for GLFW: {}\n", .{ target.result.os.tag });
+pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
+	const glfw = b.dependency("glfw", .{});
+	const root = glfw.path("src");
+	const os = target.result.os.tag;
+
+	const WinSys = enum {win32, x11, cocoa};
+
+	// TODO: Wayland
+	// TODO: Cocoa
+	const ws: WinSys = switch(os) {
+		.windows => .win32,
+		.linux => .x11,
+		.macos => .x11,
+		// There are a surprising number of platforms zig supports.
+		// File a bug report if Cubyz doesn't work on yours.
+		else => blk: {
+			std.log.warn("Operating system ({}) is untested.", .{os});
+			break :blk .x11;
+		}
+	};
+	const ws_flag = switch(ws) {
+		.win32 => "-D_GLFW_WIN32",
+		.x11 => "-D_GLFW_X11",
+		.cocoa => "-D_GLFW_COCOA",
+	};
+	var all_flags = std.ArrayList([]const u8).init(b.allocator);
+	all_flags.appendSlice(flags) catch unreachable;
+	all_flags.append(ws_flag) catch unreachable;
+	if(os == .linux) {
+		all_flags.append("-D_GNU_SOURCE") catch unreachable;
+	}
+
+	c_lib.addIncludePath(.{.path = glfw.path("include").getPath(b)});
+	c_lib.installHeader(glfw.path("include/GLFW/glfw3.h"), "GLFW/glfw3.h");
+	const fileses : [3][]const[]const u8 = .{
+		&.{"context.c", "init.c", "input.c", "monitor.c", "platform.c", "vulkan.c", "window.c", "egl_context.c", "osmesa_context.c", "null_init.c", "null_monitor.c", "null_window.c", "null_joystick.c"},
+		switch(os) {
+			.windows => &.{"win32_module.c", "win32_time.c", "win32_thread.c" },
+			.linux => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
+			.macos => &.{"cocoa_time.c", "posix_module.c", "posix_thread.c"},
+			else => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
+		},
+		switch(ws) {
+			.win32 => &.{"win32_init.c", "win32_joystick.c", "win32_monitor.c", "win32_window.c", "wgl_context.c"},
+			.x11 => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c"},
+			.cocoa => &.{"cocoa_platform.h", "cocoa_joystick.h", "cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
+		}
+	};
+
+	for(fileses) |files| {
+		c_lib.addCSourceFiles(.{
+			.root = root,
+			.files = files,
+			.flags = all_flags.items,
+		});
 	}
 }
 
@@ -176,15 +192,15 @@ pub inline fn makeCubyzLibs(b: *std.Build, name: []const u8, target: std.Build.R
 
 	c_lib.addAfterIncludePath(.{.path = "include"});
 	c_lib.installHeader(.{.path = "include/glad/glad.h"}, "glad/glad.h");
-	c_lib.installHeader(.{.path = "include/GLFW/glfw3.h"}, "GLFW/glfw3.h");
 	c_lib.installHeader(.{.path = "include/KHR/khrplatform.h"}, "KHR/khrplatform.h");
 	c_lib.installHeader(.{.path = "include/stb/stb_image_write.h"}, "stb/stb_image_write.h");
 	c_lib.installHeader(.{.path = "include/stb/stb_image.h"}, "stb/stb_image.h");
 	c_lib.installHeader(.{.path = "include/stb/stb_vorbis.h"}, "stb/stb_vorbis.h");
-	addPortAudio(b, c_lib, target, optimize, flags);
-	addFreetypeAndHarfbuzz(b, c_lib, target, optimize, flags);
-	addGLFWSources(c_lib, target, flags);
-	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/glad.c", "lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c"}, .flags = flags});
+	addPortAudio(b, c_lib, target, flags);
+	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
+	addGLFWSources(b, c_lib, target, flags);
+	c_lib.addCSourceFile(.{.file = .{.path = "lib/glad.c"}, .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
+	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c"}, .flags = flags});
 
 	return c_lib;
 }

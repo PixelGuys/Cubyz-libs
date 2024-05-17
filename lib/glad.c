@@ -79,7 +79,7 @@ void close_gl(void) {
 #include <dlfcn.h>
 static void* libGL;
 
-#if !defined(__APPLE__) && !defined(__HAIKU__)
+#if (!defined(__APPLE__) || defined(_MAC_X11)) && !defined(__HAIKU__)
 typedef void* (APIENTRYP PFNGLXGETPROCADDRESSPROC_PRIVATE)(const char*);
 static PFNGLXGETPROCADDRESSPROC_PRIVATE gladGetProcAddressPtr;
 #endif
@@ -88,6 +88,7 @@ static
 int open_gl(void) {
 #ifdef __APPLE__
     static const char *NAMES[] = {
+        "libGL.1.dylib",
         "../Frameworks/OpenGL.framework/OpenGL",
         "/Library/Frameworks/OpenGL.framework/OpenGL",
         "/System/Library/Frameworks/OpenGL.framework/OpenGL",
@@ -102,7 +103,7 @@ int open_gl(void) {
         libGL = dlopen(NAMES[index], RTLD_NOW | RTLD_GLOBAL);
 
         if(libGL != NULL) {
-#if defined(__APPLE__) || defined(__HAIKU__)
+#if (defined(__APPLE__) && !defined(_MAC_X11)) || defined(__HAIKU__)
             return 1;
 #else
             gladGetProcAddressPtr = (PFNGLXGETPROCADDRESSPROC_PRIVATE)dlsym(libGL,
@@ -129,7 +130,7 @@ void* get_proc(const char *namez) {
     void* result = NULL;
     if(libGL == NULL) return NULL;
 
-#if !defined(__APPLE__) && !defined(__HAIKU__)
+#if (!defined(__APPLE__) || defined(_MAC_X11)) && !defined(__HAIKU__)
     if(gladGetProcAddressPtr != NULL) {
         result = gladGetProcAddressPtr(namez);
     }
