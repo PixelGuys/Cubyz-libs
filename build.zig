@@ -205,6 +205,25 @@ pub inline fn makeCubyzLibs(b: *std.Build, name: []const u8, target: std.Build.R
 	return c_lib;
 }
 
+fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
+	const allocator = step.owner.allocator;
+	const result = try std.ChildProcess.run(.{.allocator = allocator, .argv = argv});
+	try std.io.getStdOut().writeAll(result.stdout);
+	try std.io.getStdErr().writeAll(result.stderr);
+	allocator.free(result.stdout);
+	allocator.free(result.stderr);
+}
+
+fn packageFunction(step: *std.Build.Step, _: *std.Progress.Node) anyerror!void {
+	const base: []const []const u8 = &.{"tar", "-czf"};
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
+}
 
 pub fn build(b: *std.Build) !void {
 	// Standard target options allows the person running `zig build` to choose
@@ -220,6 +239,8 @@ pub fn build(b: *std.Build) !void {
 
 	const releaseStep = b.step("release", "Build and package all targets for distribution");
 	const nativeStep = b.step("native", "Build only native target for debugging or local builds");
+	const buildStep = b.step("build_all", "Build all targets for distribution");
+	releaseStep.dependOn(buildStep);
 
 	for (targets) |target| {
 		const t = b.resolveTargetQuery(target);
@@ -230,7 +251,7 @@ pub fn build(b: *std.Build) !void {
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		subStep.dependOn(&install.step);
-		releaseStep.dependOn(subStep);
+		buildStep.dependOn(subStep);
 	}
 
 	{
@@ -239,6 +260,18 @@ pub fn build(b: *std.Build) !void {
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		nativeStep.dependOn(&install.step);
+	}
+
+	{
+		const step = try b.allocator.create(std.Build.Step);
+		step.* = std.Build.Step.init(.{
+			.name = "package",
+			.makeFn = &packageFunction,
+			.owner = b,
+			.id = .custom,
+		});
+		step.dependOn(buildStep);
+		releaseStep.dependOn(step);
 	}
 
 	// Alias the default `zig build` to only build native target.
