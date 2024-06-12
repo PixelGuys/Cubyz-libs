@@ -157,7 +157,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		all_flags.append("-D_GNU_SOURCE") catch unreachable;
 	}
 
-	c_lib.addIncludePath(.{.path = glfw.path("include").getPath(b)});
+	c_lib.addIncludePath(glfw.path("include"));
 	c_lib.installHeader(glfw.path("include/GLFW/glfw3.h"), "GLFW/glfw3.h");
 	const fileses : [3][]const[]const u8 = .{
 		&.{"context.c", "init.c", "input.c", "monitor.c", "platform.c", "vulkan.c", "window.c", "egl_context.c", "osmesa_context.c", "null_init.c", "null_monitor.c", "null_window.c", "null_joystick.c"},
@@ -190,16 +190,16 @@ pub inline fn makeCubyzLibs(b: *std.Build, name: []const u8, target: std.Build.R
 		.optimize = optimize,
 	});
 
-	c_lib.addAfterIncludePath(.{.path = "include"});
-	c_lib.installHeader(.{.path = "include/glad/glad.h"}, "glad/glad.h");
-	c_lib.installHeader(.{.path = "include/KHR/khrplatform.h"}, "KHR/khrplatform.h");
-	c_lib.installHeader(.{.path = "include/stb/stb_image_write.h"}, "stb/stb_image_write.h");
-	c_lib.installHeader(.{.path = "include/stb/stb_image.h"}, "stb/stb_image.h");
-	c_lib.installHeader(.{.path = "include/stb/stb_vorbis.h"}, "stb/stb_vorbis.h");
+	c_lib.addAfterIncludePath(b.path("include"));
+	c_lib.installHeader(b.path("include/glad/glad.h"), "glad/glad.h");
+	c_lib.installHeader(b.path("include/KHR/khrplatform.h"), "KHR/khrplatform.h");
+	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
+	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
+	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
 	addPortAudio(b, c_lib, target, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	addGLFWSources(b, c_lib, target, flags);
-	c_lib.addCSourceFile(.{.file = .{.path = "lib/glad.c"}, .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
+	c_lib.addCSourceFile(.{.file = b.path("lib/glad.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
 	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c"}, .flags = flags});
 
 	return c_lib;
@@ -207,14 +207,14 @@ pub inline fn makeCubyzLibs(b: *std.Build, name: []const u8, target: std.Build.R
 
 fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
 	const allocator = step.owner.allocator;
-	const result = try std.ChildProcess.run(.{.allocator = allocator, .argv = argv});
+	const result = try std.process.Child.run(.{.allocator = allocator, .argv = argv});
 	try std.io.getStdOut().writeAll(result.stdout);
 	try std.io.getStdErr().writeAll(result.stderr);
 	allocator.free(result.stdout);
 	allocator.free(result.stderr);
 }
 
-fn packageFunction(step: *std.Build.Step, _: *std.Progress.Node) anyerror!void {
+fn packageFunction(step: *std.Build.Step, _: std.Progress.Node) anyerror!void {
 	const base: []const []const u8 = &.{"tar", "-czf"};
 	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib"});
 	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib"});
