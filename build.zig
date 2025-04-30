@@ -108,8 +108,8 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 	const freetype = b.dependency("freetype", .{});
 	const harfbuzz = b.dependency("harfbuzz", .{});
 
-	c_lib.defineCMacro("FT2_BUILD_LIBRARY", "1");
-	c_lib.defineCMacro("HAVE_UNISTD_H", "1");
+	c_lib.root_module.addCMacro("FT2_BUILD_LIBRARY", "1");
+	c_lib.root_module.addCMacro("HAVE_UNISTD_H", "1");
 	c_lib.addIncludePath(freetype.path("include"));
 	c_lib.installHeadersDirectory(freetype.path("include"), "", .{});
 	addPackageCSourceFiles(c_lib, freetype, &freetypeSources, flags);
@@ -120,7 +120,7 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 
 	c_lib.addIncludePath(harfbuzz.path("src"));
 	c_lib.installHeadersDirectory(harfbuzz.path("src"), "", .{});
-	c_lib.defineCMacro("HAVE_FREETYPE", "1");
+	c_lib.root_module.addCMacro("HAVE_FREETYPE", "1");
 	c_lib.addCSourceFile(.{.file = harfbuzz.path("src/harfbuzz.cc"), .flags = flags});
 	c_lib.linkLibCpp();
 }
@@ -214,7 +214,7 @@ fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
 	allocator.free(result.stderr);
 }
 
-fn packageFunction(step: *std.Build.Step, _: std.Progress.Node) anyerror!void {
+fn packageFunction(step: *std.Build.Step, _: std.Build.Step.MakeOptions) anyerror!void {
 	const base: []const []const u8 = &.{"tar", "-czf"};
 	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib"});
 	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib"});

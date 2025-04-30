@@ -1,23 +1,24 @@
 .{
-	.name = "Cubyzig",
+	.name = .cubyz_libs,
+	.fingerprint = 0x309b84abf3e7800f,
 	.version = "0.0.0",
 	.paths = .{""},
 	.dependencies = .{
 		.glfw = .{
 			.url = "https://github.com/glfw/glfw/archive/refs/tags/3.4.tar.gz",
-			.hash = "1220c46ebcac607065f942193b82a21b87213fca4b0d50c83461f8f5e22955fcb88f",
+			.hash = "N-V-__8AAL40TADEbrysYHBl-UIZO4KiG4chP8pLDVDINGH4",
 		},
 		.harfbuzz = .{
 			.url = "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/8.2.2.tar.gz",
-			.hash = "1220d27d0e3ddd47705cbe1505076058cb41649336d35ea51369ec8f042c35991e0f",
+			.hash = "N-V-__8AAMnvlQXSfQ493UdwXL4VBQdgWMtBZJM2016lE2ns",
 		},
 		.freetype = .{
 			.url = "https://github.com/freetype/freetype/archive/refs/tags/VER-2-13-2.tar.gz",
-			.hash = "1220b81f6ecfb3fd222f76cf9106fecfa6554ab07ec7fdc4124b9bb063ae2adf969d",
+			.hash = "N-V-__8AAKLKpwC4H27Ps_0iL3bPkQb-z6ZVSrB-x_3EEkub",
 		},
 		.portaudio = .{
 			.url = "https://github.com/PortAudio/portaudio/archive/refs/tags/v19.7.0.tar.gz",
-			.hash = "1220a96e42d87ae966106483e3351919c95b7c8129942c355fd173b38b2e7a0ae0a0",
-		}
+			.hash = "N-V-__8AAIh5aQCpbkLYeulmEGSD4zUZGclbfIEplCw1X9Fz",
+		},
 	},
 }
