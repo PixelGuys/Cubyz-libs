@@ -206,13 +206,16 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		.optimize = optimize,
 		.@"enable-opt" = true,
 	});
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("glslang"), .{}).step);
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("MachineIndependent"), .{}).step);
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("GenericCodeGen"), .{}).step);
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("glslang-default-resource-limits"), .{}).step);
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV"), .{}).step);
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV-Tools"), .{}).step);
-	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV-Tools-opt"), .{}).step);
+	const options = std.Build.Step.InstallArtifact.Options {
+		.dest_dir = .{.override = .{.custom = b.fmt("lib/{s}", .{name})}},
+	};
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("glslang"), options).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("MachineIndependent"), options).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("GenericCodeGen"), options).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("glslang-default-resource-limits"), options).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV"), options).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV-Tools"), options).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV-Tools-opt"), options).step);
 
 	return c_lib;
 }
@@ -228,30 +231,12 @@ fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
 
 fn packageFunction(step: *std.Build.Step, _: std.Build.Step.MakeOptions) anyerror!void {
 	const base: []const []const u8 = &.{"tar", "-czf"};
-	const otherFilesUnix: []const []const u8 = &.{
-		"zig-out/lib/libglslang.a",
-		"zig-out/lib/libMachineIndependent.a",
-		"zig-out/lib/libGenericCodeGen.a",
-		"zig-out/lib/libglslang-default-resource-limits.a",
-		"zig-out/lib/libSPIRV.a",
-		"zig-out/lib/libSPIRV-Tools.a",
-		"zig-out/lib/libSPIRV-Tools-opt.a",
-	};
-	const otherFilesWindows: []const []const u8 = &.{
-		"zig-out/lib/glslang.lib",
-		"zig-out/lib/MachineIndependent.lib",
-		"zig-out/lib/GenericCodeGen.lib",
-		"zig-out/lib/glslang-default-resource-limits.lib",
-		"zig-out/lib/SPIRV.lib",
-		"zig-out/lib/SPIRV-Tools.lib",
-		"zig-out/lib/SPIRV-Tools-opt.lib",
-	};
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib"} ++ otherFilesWindows);
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib"} ++ otherFilesWindows);
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a"} ++ otherFilesUnix);
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a"} ++ otherFilesUnix);
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a"} ++ otherFilesUnix);
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a"} ++ otherFilesUnix);
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib", "zig-out/lib/cubyz_deps_x86_64-windows-gnu"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib", "zig-out/lib/cubyz_deps_aarch64-windows-gnu"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a", "zig-out/lib/cubyz_deps_x86_64-linux-musl"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a", "zig-out/lib/cubyz_deps_aarch64-linux-musl"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a", "zig-out/lib/cubyz_deps_x86_64-macos-none"});
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a", "zig-out/lib/cubyz_deps_aarch64-macos-none"});
 	try runChild(step, base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
 }
 
