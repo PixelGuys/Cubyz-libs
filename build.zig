@@ -183,7 +183,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	}
 }
 
-pub inline fn makeCubyzLibs(b: *std.Build, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) *std.Build.Step.Compile {
+pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) *std.Build.Step.Compile {
 	const c_lib = b.addStaticLibrary(.{
 		.name = name,
 		.target = target,
@@ -201,6 +201,18 @@ pub inline fn makeCubyzLibs(b: *std.Build, name: []const u8, target: std.Build.R
 	addGLFWSources(b, c_lib, target, flags);
 	c_lib.addCSourceFile(.{.file = b.path("lib/glad.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
 	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c"}, .flags = flags});
+	const glslang = b.dependency("glslang", .{
+		.target = target,
+		.optimize = optimize,
+		.@"enable-opt" = true,
+	});
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("glslang"), .{}).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("MachineIndependent"), .{}).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("GenericCodeGen"), .{}).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("glslang-default-resource-limits"), .{}).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV"), .{}).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV-Tools"), .{}).step);
+	step.dependOn(&b.addInstallArtifact(glslang.artifact("SPIRV-Tools-opt"), .{}).step);
 
 	return c_lib;
 }
@@ -216,12 +228,30 @@ fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
 
 fn packageFunction(step: *std.Build.Step, _: std.Build.Step.MakeOptions) anyerror!void {
 	const base: []const []const u8 = &.{"tar", "-czf"};
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a"});
+	const otherFilesUnix: []const []const u8 = &.{
+		"zig-out/lib/libglslang.a",
+		"zig-out/lib/libMachineIndependent.a",
+		"zig-out/lib/libGenericCodeGen.a",
+		"zig-out/lib/libglslang-default-resource-limits.a",
+		"zig-out/lib/libSPIRV.a",
+		"zig-out/lib/libSPIRV-Tools.a",
+		"zig-out/lib/libSPIRV-Tools-opt.a",
+	};
+	const otherFilesWindows: []const []const u8 = &.{
+		"zig-out/lib/glslang.lib",
+		"zig-out/lib/MachineIndependent.lib",
+		"zig-out/lib/GenericCodeGen.lib",
+		"zig-out/lib/glslang-default-resource-limits.lib",
+		"zig-out/lib/SPIRV.lib",
+		"zig-out/lib/SPIRV-Tools.lib",
+		"zig-out/lib/SPIRV-Tools-opt.lib",
+	};
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib"} ++ otherFilesWindows);
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib"} ++ otherFilesWindows);
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a"} ++ otherFilesUnix);
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a"} ++ otherFilesUnix);
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a"} ++ otherFilesUnix);
+	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a"} ++ otherFilesUnix);
 	try runChild(step, base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
 }
 
@@ -247,7 +277,7 @@ pub fn build(b: *std.Build) !void {
 		const name = t.result.linuxTriple(b.allocator) catch unreachable;
 		const subStep = b.step(name, b.fmt("Build only {s}", .{name}));
 		const deps = b.fmt("cubyz_deps_{s}", .{name});
-		const c_lib = makeCubyzLibs(b, deps, t, .ReleaseSmall, c_flags);
+		const c_lib = makeCubyzLibs(b, subStep, deps, t, .ReleaseSmall, c_flags);
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		subStep.dependOn(&install.step);
@@ -256,7 +286,7 @@ pub fn build(b: *std.Build) !void {
 
 	{
 		const name = preferredTarget.result.linuxTriple(b.allocator) catch unreachable;
-		const c_lib = makeCubyzLibs(b, b.fmt("cubyz_deps_{s}", .{name}), preferredTarget, preferredOptimize, c_flags);
+		const c_lib = makeCubyzLibs(b, nativeStep, b.fmt("cubyz_deps_{s}", .{name}), preferredTarget, preferredOptimize, c_flags);
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		nativeStep.dependOn(&install.step);

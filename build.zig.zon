@@ -20,5 +20,9 @@
 			.url = "https://github.com/PortAudio/portaudio/archive/refs/tags/v19.7.0.tar.gz",
 			.hash = "N-V-__8AAIh5aQCpbkLYeulmEGSD4zUZGclbfIEplCw1X9Fz",
 		},
+		.glslang = .{
+			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/4d2877072dc0ebb97698e6620a59e55ef3f367ce.tar.gz",
+			.hash = "glslang-1.4.309-eMn68Pu-CQBK98WlBPbet0hMUVM2hNWdVP4mKn1hNsD-",
+		},
 	},
 }
