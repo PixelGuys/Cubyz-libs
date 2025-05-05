@@ -196,6 +196,8 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
+	const vulkan_headers = b.dependency("vulkan_headers", .{});
+	c_lib.installHeadersDirectory(vulkan_headers.path("include"), "", .{});
 	addPortAudio(b, c_lib, target, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	addGLFWSources(b, c_lib, target, flags);

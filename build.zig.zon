@@ -24,5 +24,9 @@
 			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/4d2877072dc0ebb97698e6620a59e55ef3f367ce.tar.gz",
 			.hash = "glslang-1.4.309-eMn68Pu-CQBK98WlBPbet0hMUVM2hNWdVP4mKn1hNsD-",
 		},
+		.vulkan_headers = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.304.tar.gz",
+			.hash = "N-V-__8AACUYwwHkOfRNOmzhES0A0wAstELzgG-GdNu-uUE5",
+		},
 	},
 }
