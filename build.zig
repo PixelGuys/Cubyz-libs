@@ -64,46 +64,6 @@ const freetypeSources = [_][]const u8{
 	"src/winfonts/winfnt.c",
 };
 
-// Inlines are necessaryb to preserve comptime status of flags.
-pub inline fn addPortAudio(b: *std.Build, c_lib: *std.Build.Step.Compile, target:std.Build.ResolvedTarget, flags: []const []const u8) void {
-	// compile portaudio from source:
-	const portaudio = b.dependency("portaudio", .{});
-	c_lib.addIncludePath(portaudio.path("include"));
-	c_lib.installHeadersDirectory(portaudio.path("include"), "", .{});
-	c_lib.addIncludePath(portaudio.path("src/common"));
-	addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {
-		"src/common/pa_allocation.c",
-		"src/common/pa_converters.c",
-		"src/common/pa_cpuload.c",
-		"src/common/pa_debugprint.c",
-		"src/common/pa_dither.c",
-		"src/common/pa_front.c",
-		"src/common/pa_process.c",
-		"src/common/pa_ringbuffer.c",
-		"src/common/pa_stream.c",
-		"src/common/pa_trace.c",
-	}, flags);
-	if(target.result.os.tag == .windows) {
-		// windows:
-		addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {"src/os/win/pa_win_coinitialize.c", "src/os/win/pa_win_hostapis.c", "src/os/win/pa_win_util.c", "src/os/win/pa_win_waveformat.c", "src/os/win/pa_win_wdmks_utils.c", "src/os/win/pa_x86_plain_converters.c", }, flags ++ &[_][]const u8{"-DPA_USE_WASAPI"});
-		c_lib.addIncludePath(portaudio.path("src/os/win"));
-		// WASAPI:
-		addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {"src/hostapi/wasapi/pa_win_wasapi.c"}, flags);
-	} else if(target.result.os.tag == .linux) {
-		// unix:
-		addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {"src/os/unix/pa_unix_hostapis.c", "src/os/unix/pa_unix_util.c"}, flags ++ &[_][]const u8{"-DPA_USE_ALSA"});
-		c_lib.addIncludePath(portaudio.path("src/os/unix"));
-		// ALSA:
-		addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {"src/hostapi/alsa/pa_linux_alsa.c"}, flags);
-	} else if(target.result.os.tag == .macos) {
-		addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {"src/os/unix/pa_unix_hostapis.c", "src/os/unix/pa_unix_util.c"}, flags ++ &[_][]const u8{"-DPA_USE_COREAUDIO"});
-		// coreaudio:
-		addPackageCSourceFiles(c_lib, portaudio, &[_][]const u8 {"src/hostapi/coreaudio/pa_mac_core_utilities.c", "src/hostapi/coreaudio/pa_mac_core.c", "src/hostapi/coreaudio/pa_mac_core_blocking.c", }, flags ++ &[_][]const u8{"-DPA_USE_COREAUDIO"});
-	} else {
-		std.log.err("Unsupported target: {}\n", .{ target.result.os.tag });
-	}
-}
-
 pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
 	const freetype = b.dependency("freetype", .{});
 	const harfbuzz = b.dependency("harfbuzz", .{});
@@ -196,13 +156,13 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
+	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
 	const vulkan_headers = b.dependency("vulkan_headers", .{});
 	c_lib.installHeadersDirectory(vulkan_headers.path("include"), "", .{});
-	addPortAudio(b, c_lib, target, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	addGLFWSources(b, c_lib, target, flags);
 	c_lib.addCSourceFile(.{.file = b.path("lib/glad.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
-	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c"}, .flags = flags});
+	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
 	const glslang = b.dependency("glslang", .{
 		.target = target,
 		.optimize = optimize,
