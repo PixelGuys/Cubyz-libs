@@ -151,17 +151,18 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	});
 
 	c_lib.addAfterIncludePath(b.path("include"));
-	c_lib.installHeader(b.path("include/glad/glad.h"), "glad/glad.h");
+	c_lib.installHeader(b.path("include/glad/gl.h"), "glad/gl.h");
+	c_lib.installHeader(b.path("include/glad/vulkan.h"), "glad/vulkan.h");
 	c_lib.installHeader(b.path("include/KHR/khrplatform.h"), "KHR/khrplatform.h");
+	c_lib.installHeader(b.path("include/vk_platform.h"), "vk_platform.h");
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
 	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
-	const vulkan_headers = b.dependency("vulkan_headers", .{});
-	c_lib.installHeadersDirectory(vulkan_headers.path("include"), "", .{});
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	addGLFWSources(b, c_lib, target, flags);
-	c_lib.addCSourceFile(.{.file = b.path("lib/glad.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
+	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
+	c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
 	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
 	const glslang = b.dependency("glslang", .{
 		.target = target,
