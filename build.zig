@@ -90,29 +90,29 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	const root = glfw.path("src");
 	const os = target.result.os.tag;
 
-	const WinSys = enum {win32, x11, cocoa};
+	const WinSys = enum {win32, x11, x11_wl, cocoa};
 
-	// TODO: Wayland
 	// TODO: Cocoa
 	const ws: WinSys = switch(os) {
 		.windows => .win32,
-		.linux => .x11,
+		.linux => .x11_wl,
 		.macos => .x11,
 		// There are a surprising number of platforms zig supports.
 		// File a bug report if Cubyz doesn't work on yours.
 		else => blk: {
 			std.log.warn("Operating system ({}) is untested.", .{os});
-			break :blk .x11;
-		}
+			break :blk .x11_wl;
+		},
 	};
-	const ws_flag = switch(ws) {
-		.win32 => "-D_GLFW_WIN32",
-		.x11 => "-D_GLFW_X11",
-		.cocoa => "-D_GLFW_COCOA",
+	const ws_flags: []const []const u8 = switch (ws) {
+		.win32 => &.{"-D_GLFW_WIN32"},
+		.x11 => &.{"-D_GLFW_X11"},
+		.x11_wl => &.{"-D_GLFW_X11", "-D_GLFW_WAYLAND"},
+		.cocoa => &.{"-D_GLFW_COCOA"},
 	};
 	var all_flags = std.ArrayList([]const u8).init(b.allocator);
 	all_flags.appendSlice(flags) catch unreachable;
-	all_flags.append(ws_flag) catch unreachable;
+	all_flags.appendSlice(ws_flags) catch unreachable;
 	if(os == .linux) {
 		all_flags.append("-D_GNU_SOURCE") catch unreachable;
 	}
@@ -122,7 +122,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	const fileses : [3][]const[]const u8 = .{
 		&.{"context.c", "init.c", "input.c", "monitor.c", "platform.c", "vulkan.c", "window.c", "egl_context.c", "osmesa_context.c", "null_init.c", "null_monitor.c", "null_window.c", "null_joystick.c"},
 		switch(os) {
-			.windows => &.{"win32_module.c", "win32_time.c", "win32_thread.c" },
+			.windows => &.{"win32_module.c", "win32_time.c", "win32_thread.c"},
 			.linux => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
 			.macos => &.{"cocoa_time.c", "posix_module.c", "posix_thread.c"},
 			else => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
@@ -130,6 +130,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		switch(ws) {
 			.win32 => &.{"win32_init.c", "win32_joystick.c", "win32_monitor.c", "win32_window.c", "wgl_context.c"},
 			.x11 => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c"},
+			.x11_wl => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c", "wl_init.c", "wl_monitor.c", "wl_window.c"},
 			.cocoa => &.{"cocoa_platform.h", "cocoa_joystick.h", "cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
 		}
 	};
@@ -141,7 +142,173 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 			.flags = all_flags.items,
 		});
 	}
+
+	if(ws == .x11_wl) {
+		const wayland_version: std.SemanticVersion = .{
+			.major = 1,
+			.minor = 24,
+			.patch = 0,
+		};
+
+		const libwayland = b.dependency("libwayland", .{});
+		c_lib.addIncludePath(libwayland.path("src"));
+
+		const wayland_version_header = b.addConfigHeader(.{
+			.style = .{.cmake = libwayland.path("src/wayland-version.h.in")},
+		}, .{
+			.WAYLAND_VERSION_MAJOR = @as(i64, @intCast(wayland_version.major)),
+			.WAYLAND_VERSION_MINOR = @as(i64, @intCast(wayland_version.minor)),
+			.WAYLAND_VERSION_MICRO = @as(i64, @intCast(wayland_version.patch)),
+			.WAYLAND_VERSION = b.fmt("{}", .{wayland_version}),
+		});
+
+		c_lib.addConfigHeader(wayland_version_header);
+
+		const wl_scanner = b.addExecutable(.{
+			.name = "wayland-scanner",
+			.root_module = b.createModule(.{
+				.link_libc = true,
+				// This is intentionally our host target, since we only run wayland-scanner natively
+				// as part of this build script. It isn't part of our output.
+				.target = b.graph.host,
+			}),
+		});
+		wl_scanner.addCSourceFiles(.{
+			.root = libwayland.path("src"),
+			.files = &.{
+				"scanner.c",
+				"wayland-util.c",
+			},
+		});
+		wl_scanner.addConfigHeader(wayland_version_header);
+		wl_scanner.addIncludePath(libwayland.path(""));
+		wl_scanner.addIncludePath(libwayland.path("src"));
+
+		if(b.lazyDependency("libexpat", .{.target = b.graph.host})) |expat| {
+			wl_scanner.linkLibrary(expat.artifact("expat"));
+		}
+
+		const wl_protocols = [_]GenerateWaylandProtocolsStep.WaylandProtocolSpec{
+			.{.input_xml = glfw.path("deps/wayland/wayland.xml"), .output_basename = "wayland"},
+			.{.input_xml = glfw.path("deps/wayland/viewporter.xml"), .output_basename = "viewporter"},
+			.{.input_xml = glfw.path("deps/wayland/xdg-shell.xml"), .output_basename = "xdg-shell"},
+			.{.input_xml = glfw.path("deps/wayland/idle-inhibit-unstable-v1.xml"), .output_basename = "idle-inhibit-unstable-v1"},
+			.{.input_xml = glfw.path("deps/wayland/pointer-constraints-unstable-v1.xml"), .output_basename = "pointer-constraints-unstable-v1"},
+			.{.input_xml = glfw.path("deps/wayland/relative-pointer-unstable-v1.xml"), .output_basename = "relative-pointer-unstable-v1"},
+			.{.input_xml = glfw.path("deps/wayland/fractional-scale-v1.xml"), .output_basename = "fractional-scale-v1"},
+			.{.input_xml = glfw.path("deps/wayland/xdg-activation-v1.xml"), .output_basename = "xdg-activation-v1"},
+			.{.input_xml = glfw.path("deps/wayland/xdg-decoration-unstable-v1.xml"), .output_basename = "xdg-decoration-unstable-v1"},
+		};
+		const wl_step = GenerateWaylandProtocolsStep.init(b, &wl_protocols, wl_scanner);
+		c_lib.step.dependOn(&wl_step.step);
+
+		c_lib.addIncludePath(wl_step.headersPath());
+	}
 }
+
+const GenerateWaylandProtocolsStep = struct {
+	const WaylandProtocolSpec = struct {
+		input_xml: std.Build.LazyPath,
+		output_basename: []const u8,
+	};
+
+	step: std.Build.Step,
+	headers_output: std.Build.GeneratedFile,
+	inputs: []const WaylandProtocolSpec,
+	wl_scanner: *std.Build.Step.Compile,
+
+	fn init(b: *std.Build, inputs: []const WaylandProtocolSpec, wl_scanner: *std.Build.Step.Compile) *GenerateWaylandProtocolsStep {
+		const self = b.allocator.create(GenerateWaylandProtocolsStep) catch unreachable;
+
+		const inputs_dupe = b.allocator.dupe(WaylandProtocolSpec, inputs) catch unreachable;
+
+		self.* = .{
+			.step = std.Build.Step.init(.{
+				.name = "generate-wayland-protocols",
+				.makeFn = &makeFunction,
+				.owner = b,
+				.id = .custom,
+			}),
+			.headers_output = .{.step = &self.step},
+			.inputs = inputs_dupe,
+			.wl_scanner = wl_scanner,
+		};
+
+		for(inputs) |input| {
+			input.input_xml.addStepDependencies(&self.step);
+		}
+
+		wl_scanner.getEmittedBin().addStepDependencies(&self.step);
+
+		return self;
+	}
+
+	fn headersPath(self: *const GenerateWaylandProtocolsStep) std.Build.LazyPath {
+		return .{.generated = .{.file = &self.headers_output}};
+	}
+
+	fn makeFunction(step: *std.Build.Step, _: std.Build.Step.MakeOptions) anyerror!void {
+		const self: *GenerateWaylandProtocolsStep = @fieldParentPtr("step", step);
+		const b = step.owner;
+
+		var man = b.graph.cache.obtain();
+		defer man.deinit();
+
+		// Random bytes. Update when there's a breaking change to this code.
+		man.hash.add(@as(u32, 0x68b6d51a));
+
+		for(self.inputs) |protospec| {
+			const path = try protospec.input_xml.getPath3(b, step).toString(b.allocator);
+			_ = try man.addFile(path, null);
+		}
+
+		if(try step.cacheHit(&man)) {
+			// cache hit
+			const final_hash = man.final();
+			self.headers_output.path = b.cache_root.join(b.allocator, &.{"o", &final_hash}) catch unreachable;
+			step.result_cached = true;
+			return;
+		}
+
+		const final_hash = man.final();
+		const headers_path = b.cache_root.join(b.allocator, &.{"o", &final_hash}) catch unreachable;
+		self.headers_output.path = headers_path;
+
+		try std.fs.cwd().makePath(headers_path);
+
+		for(self.inputs) |protospec| {
+			const input_xml_path = try protospec.input_xml.getPath3(b, step).toString(b.allocator);
+			const wl_scanner_path = try self.wl_scanner.getEmittedBin().getPath3(b, step).toString(b.allocator);
+
+			var hdr_child = std.process.Child.init(&.{
+				wl_scanner_path,
+				"client-header",
+				input_xml_path,
+				b.fmt("{s}/{s}-client-protocol.h", .{headers_path, protospec.output_basename}),
+			}, b.allocator);
+			if(!std.meta.eql(try hdr_child.spawnAndWait(), .{.Exited = 0})) {
+				return error.WaylandScannerFailed;
+			}
+
+			var src_child = std.process.Child.init(&.{
+				wl_scanner_path,
+				"private-code",
+				input_xml_path,
+				// One might be wondering why we're putting these generated source files that are
+				// clearly meant to be built as separate compilation units into the include
+				// directory.
+				// The reason is that GLFW actually #includes them in wl_init.c instead of compiling
+				// them separately. Strange, right?
+				b.fmt("{s}/{s}-client-protocol-code.h", .{headers_path, protospec.output_basename}),
+			}, b.allocator);
+			if(!std.meta.eql(try src_child.spawnAndWait(), .{.Exited = 0})) {
+				return error.WaylandScannerFailed;
+			}
+		}
+
+		try step.writeManifest(&man);
+	}
+};
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) *std.Build.Step.Compile {
 	const c_lib = b.addStaticLibrary(.{

@@ -20,5 +20,17 @@
 			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/4d2877072dc0ebb97698e6620a59e55ef3f367ce.tar.gz",
 			.hash = "glslang-1.4.309-eMn68Pu-CQBK98WlBPbet0hMUVM2hNWdVP4mKn1hNsD-",
 		},
+		.libwayland = .{
+			// Update the `wayland_version` constant in build.zig whenever you update this!
+			.url = "https://gitlab.freedesktop.org/wayland/wayland/-/archive/1.24/wayland-1.24.tar.gz",
+			.hash = "N-V-__8AAGoeGQBEn6KguTJUXrCE0tIRrrXfQX7hYHoKCJwZ",
+		},
+
+		// This is a dependency we need to build wayland-scanner.
+		.libexpat = .{
+			.url = "git+https://github.com/allyourcodebase/libexpat.git?ref=2.7.1#917dcfdf644814a73b6a25eac6b2d434f9f1f99f",
+			.hash = "libexpat-2.7.1-y_akI1M7AAA1huPJVegH4dosRVA-lMRgzMuX9vC7aB1s",
+			.lazy = true,
+		},
 	},
 }
