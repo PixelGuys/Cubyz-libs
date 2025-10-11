@@ -97,7 +97,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	const ws: WinSys = switch(os) {
 		.windows => .win32,
 		.linux => .x11,
-		.macos => .x11,
+		.macos => .cocoa,
 		// There are a surprising number of platforms zig supports.
 		// File a bug report if Cubyz doesn't work on yours.
 		else => blk: {
@@ -130,7 +130,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		switch(ws) {
 			.win32 => &.{"win32_init.c", "win32_joystick.c", "win32_monitor.c", "win32_window.c", "wgl_context.c"},
 			.x11 => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c"},
-			.cocoa => &.{"cocoa_platform.h", "cocoa_joystick.h", "cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
+			.cocoa => &.{"cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
 		}
 	};
 
@@ -161,8 +161,8 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	addGLFWSources(b, c_lib, target, flags);
-	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
-	c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
+	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags });
+	c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags });
 	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
 	const glslang = b.dependency("glslang", .{
 		.target = target,
