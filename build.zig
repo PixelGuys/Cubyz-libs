@@ -144,10 +144,10 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) *std.Build.Step.Compile {
-	const c_lib = b.addStaticLibrary(.{
+	const c_lib = b.addLibrary(.{
 		.name = name,
-		.target = target,
-		.optimize = optimize,
+		.root_module = b.createModule(.{ .target = target, .optimize = optimize }),
+		.linkage = .static
 	});
 
 	c_lib.addAfterIncludePath(b.path("include"));
@@ -183,11 +183,20 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	return c_lib;
 }
 
+fn writeTo(file: std.fs.File, bytes: []const u8) !void {
+	var buffer: [1024]u8 = undefined;
+	var writer = file.writer(&buffer).interface;
+	_ = try writer.writeAll(bytes);
+	_ = try writer.flush();
+
+}
+
 fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
 	const allocator = step.owner.allocator;
 	const result = try std.process.Child.run(.{.allocator = allocator, .argv = argv});
-	try std.io.getStdOut().writeAll(result.stdout);
-	try std.io.getStdErr().writeAll(result.stderr);
+	try writeTo(std.fs.File.stdout(), result.stdout);
+	try writeTo(std.fs.File.stderr(), result.stdout);
+	
 	allocator.free(result.stdout);
 	allocator.free(result.stderr);
 }

@@ -17,8 +17,8 @@
 			.hash = "N-V-__8AAKLKpwC4H27Ps_0iL3bPkQb-z6ZVSrB-x_3EEkub",
 		},
 		.glslang = .{
-			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/4d2877072dc0ebb97698e6620a59e55ef3f367ce.tar.gz",
-			.hash = "glslang-1.4.309-eMn68Pu-CQBK98WlBPbet0hMUVM2hNWdVP4mKn1hNsD-",
+			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/cf74b30857e349c819c1c34ec717d4c9fc0eec5c.tar.gz",
+			.hash = "glslang-1.4.309-eMn68KLGCQDAuHVUzugaYOOEhbkyHmN526R7mHIq9YUs",
 		},
 	},
 }
