@@ -64,6 +64,92 @@ const freetypeSources = [_][]const u8{
 	"src/winfonts/winfnt.c",
 };
 
+pub fn addVulkan(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
+	const headers = b.dependency("vulkanheaders", .{});
+	const loader = b.dependency("vulkanloader", .{});
+
+	// NOTE(blackedout): How to compile the Vulkan loader is taken from the CMakeLists of that project.
+	// This zig build is very incomplete but somehow still works on macOS
+	const normalLoaderSources = [_][]const u8{
+		"allocation.c",
+		"cJSON.c",
+		"debug_utils.c",
+		"extension_manual.c",
+		"loader_environment.c",
+		"gpa_helper.c",
+		"loader.c",
+		"log.c",
+		"loader_json.c",
+		"settings.c",
+		"terminator.c",
+		"trampoline.c",
+		"unknown_function_handling.c",
+		"wsi.c"
+	};
+
+	const win32LoaderSources = [_][]const u8{
+		"loader_windows.c",
+		"dirent_on_windows.c",
+	};
+
+	const linuxLoaderSources = [_][]const u8{
+		"loader_linux.c",
+	};
+
+	var all_flags = std.array_list.Managed([]const u8).init(b.allocator);
+	all_flags.appendSlice(flags) catch unreachable;
+	switch(target.result.os.tag) {
+		.windows => {
+			all_flags.append("-DVK_USE_PLATFORM_WIN32_KHR") catch unreachable;
+		},
+		.linux, .freebsd, .openbsd, .dragonfly => {
+		},
+		.ios => {
+			all_flags.append("-DVK_USE_PLATFORM_METAL_EXT") catch unreachable;
+			all_flags.append("-VK_USE_PLATFORM_IOS_MVK") catch unreachable;
+		},
+		.macos => {
+			all_flags.append("-DVK_USE_PLATFORM_METAL_EXT") catch unreachable;
+			all_flags.append("-DVK_USE_PLATFORM_MACOS_MVK") catch unreachable;
+		},
+		else => {}
+	}
+	all_flags.append("-DVK_ENABLE_BETA_EXTENSIONS") catch unreachable;
+
+	// NOTE(blackedout): Should really be if UNIX
+	if(target.result.os.tag == .linux or target.result.os.tag == .macos) {
+		all_flags.append("-DFALLBACK_CONFIG_DIRS=\"/etc/xdg\"") catch unreachable;
+		all_flags.append("-DFALLBACK_DATA_DIRS=\"/usr/local/share:/usr/share\"") catch unreachable;
+		all_flags.append("-DSYSCONFDIR=\"/etc\"") catch unreachable;
+	}
+
+	c_lib.addIncludePath(headers.path("include"));
+	c_lib.addIncludePath(loader.path("loader"));
+	c_lib.addIncludePath(loader.path("loader/generated"));
+	c_lib.installHeadersDirectory(headers.path("include"), "", .{});
+	c_lib.addCSourceFiles(.{ .root = loader.path("loader"), .files = &normalLoaderSources, .flags = all_flags.items, });
+	switch(target.result.os.tag) {
+		.windows => {
+			c_lib.addCSourceFiles(.{ .root = loader.path("loader"), .files = &win32LoaderSources, .flags = all_flags.items, });
+		},
+		.linux, .freebsd, .openbsd, .dragonfly => {
+			c_lib.addCSourceFiles(.{ .root = loader.path("loader"), .files = &linuxLoaderSources, .flags = all_flags.items, });
+		},
+		.macos => {
+		},
+		else => {}
+	}
+
+	// NOTE(blackedout): Add the MoltenVK binary and JSON manifest file
+	if(target.result.os.tag == .macos) {
+		const moltenvk = b.dependency("moltenv_macos", .{});
+		const moltenvkLibPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib");
+		const moltenvkJSONPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
+		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkLibPath, "libMoltenVK.dylib").step);
+		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkJSONPath, "MoltenVK_icd.json").step);
+	}
+}
+
 pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
 	const freetype = b.dependency("freetype", .{});
 	const harfbuzz = b.dependency("harfbuzz", .{});
@@ -97,7 +183,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	const ws: WinSys = switch(os) {
 		.windows => .win32,
 		.linux => .x11,
-		.macos => .x11,
+		.macos => .cocoa,
 		// There are a surprising number of platforms zig supports.
 		// File a bug report if Cubyz doesn't work on yours.
 		else => blk: {
@@ -110,7 +196,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		.x11 => "-D_GLFW_X11",
 		.cocoa => "-D_GLFW_COCOA",
 	};
-	var all_flags = std.ArrayList([]const u8).init(b.allocator);
+	var all_flags = std.array_list.Managed([]const u8).init(b.allocator);
 	all_flags.appendSlice(flags) catch unreachable;
 	all_flags.append(ws_flag) catch unreachable;
 	if(os == .linux) {
@@ -130,7 +216,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		switch(ws) {
 			.win32 => &.{"win32_init.c", "win32_joystick.c", "win32_monitor.c", "win32_window.c", "wgl_context.c"},
 			.x11 => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c"},
-			.cocoa => &.{"cocoa_platform.h", "cocoa_joystick.h", "cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
+			.cocoa => &.{"cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
 		}
 	};
 
@@ -144,25 +230,44 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) *std.Build.Step.Compile {
-	const c_lib = b.addStaticLibrary(.{
+	const c_lib = b.addLibrary(.{
 		.name = name,
-		.target = target,
-		.optimize = optimize,
+		.root_module = b.createModule(.{
+			.target = target,
+			.optimize = optimize,
+		})
 	});
 
 	c_lib.addAfterIncludePath(b.path("include"));
 	c_lib.installHeader(b.path("include/glad/gl.h"), "glad/gl.h");
-	c_lib.installHeader(b.path("include/glad/vulkan.h"), "glad/vulkan.h");
 	c_lib.installHeader(b.path("include/KHR/khrplatform.h"), "KHR/khrplatform.h");
-	c_lib.installHeader(b.path("include/vk_platform.h"), "vk_platform.h");
+
+	// NOTE(blackedout): glad for Vulkan is not needed on macOS since the loader is currently statically linked.
+	// Whether or not glad can be used like Volk to bind the Vulkan functions directly to the driver, I don't know.
+	if(target.result.os.tag != .macos) {
+		c_lib.installHeader(b.path("include/glad/vulkan.h"), "glad/vulkan.h");
+		c_lib.installHeader(b.path("include/vk_platform.h"), "vk_platform.h");
+	}
+
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
 	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
+
+	// NOTE(blackedout): `addVulkan` is only tested/needed on macOS so far
+	if(target.result.os.tag == .macos) {
+		addVulkan(b, c_lib, target, flags);
+	}
+
 	addGLFWSources(b, c_lib, target, flags);
-	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
-	c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags ++ &[_][]const u8 {"-D_MAC_X11"}});
+	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
+
+	// NOTE(blackedout): See the above glad comment
+	if(target.result.os.tag != .macos) {
+		c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags});
+	}
+
 	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
 	const glslang = b.dependency("glslang", .{
 		.target = target,
@@ -186,8 +291,8 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
 	const allocator = step.owner.allocator;
 	const result = try std.process.Child.run(.{.allocator = allocator, .argv = argv});
-	try std.io.getStdOut().writeAll(result.stdout);
-	try std.io.getStdErr().writeAll(result.stderr);
+	try std.fs.File.stdout().writeAll(result.stdout);
+	try std.fs.File.stderr().writeAll(result.stderr);
 	allocator.free(result.stdout);
 	allocator.free(result.stderr);
 }
