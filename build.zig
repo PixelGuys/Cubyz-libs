@@ -65,8 +65,8 @@ const freetypeSources = [_][]const u8{
 };
 
 pub fn addVulkan(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
-	const headers = b.dependency("vulkanheaders", .{});
-	const loader = b.dependency("vulkanloader", .{});
+	const headers = b.dependency("Vulkan-Headers", .{});
+	const loader = b.dependency("Vulkan-Loader", .{});
 
 	// NOTE(blackedout): How to compile the Vulkan loader is taken from the CMakeLists of that project.
 	// This zig build is very incomplete but somehow still works on macOS
@@ -142,12 +142,304 @@ pub fn addVulkan(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Buil
 
 	// NOTE(blackedout): Add the MoltenVK binary and JSON manifest file
 	if(target.result.os.tag == .macos) {
-		const moltenvk = b.dependency("moltenv_macos", .{});
+		const moltenvk = b.dependency("MoltenVK-macos", .{});
 		const moltenvkLibPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib");
-		const moltenvkJSONPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
+		const moltenvkJsonPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
 		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkLibPath, "libMoltenVK.dylib").step);
-		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkJSONPath, "MoltenVK_icd.json").step);
+		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkJsonPath, "MoltenVK_icd.json").step);
 	}
+}
+
+pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) *std.Build.Step.InstallArtifact {
+	const layerslib = b.addLibrary(.{
+		.name = "VkLayer_khronos_validation",
+		.root_module = b.createModule(.{
+			.target = target,
+			.optimize = optimize,
+		}),
+		.linkage = .dynamic
+	});
+
+	const headers = b.dependency("Vulkan-Headers", .{});
+	const validationLayers = b.dependency("Vulkan-ValidationLayers", .{});
+	const utilityLibraries = b.dependency("Vulkan-Utility-Libraries", .{});
+
+	// NOTE(blackedout): How to compile the Vulkan validation layers is taken from the CMakeLists of that project.
+	// This zig build is very incomplete but somehow still works on macOS
+	const layerSources = [_][]const u8{
+		"error_message/logging.cpp",
+		"error_message/error_location.cpp",
+		"vulkan/generated/error_location_helper.cpp",
+		"vulkan/generated/feature_requirements_helper.cpp",
+		"vulkan/generated/pnext_chain_extraction.cpp",
+		"vulkan/generated/vk_function_pointers.cpp",
+		"vulkan/generated/vk_dispatch_table_helper.cpp",
+		"vulkan/generated/vk_object_types.cpp",
+		"vulkan/generated/vk_extension_helper.cpp",
+		"utils/convert_utils.cpp",
+		"utils/dispatch_utils.cpp",
+		"utils/file_system_utils.cpp",
+		"utils/hash_util.cpp",
+		"utils/image_utils.cpp",
+		"utils/image_layout_utils.cpp",
+		"utils/vk_layer_extension_utils.cpp",
+		"utils/keyboard.cpp",
+		"utils/ray_tracing_utils.cpp",
+		"utils/sync_utils.cpp",
+		"utils/text_utils.cpp",
+		"utils/vk_struct_compare.cpp",
+		"vk_layer_config.cpp",
+
+		"best_practices/bp_buffer.cpp",
+		"best_practices/bp_cmd_buffer.cpp",
+		"best_practices/bp_cmd_buffer_nv.cpp",
+		"best_practices/bp_copy_blit_resolve.cpp",
+		"best_practices/bp_descriptor.cpp",
+		"best_practices/bp_device_memory.cpp",
+		"best_practices/bp_drawdispatch.cpp",
+		"best_practices/bp_framebuffer.cpp",
+		"best_practices/bp_image.cpp",
+		"best_practices/bp_instance_device.cpp",
+		"best_practices/bp_pipeline.cpp",
+		"best_practices/bp_ray_tracing.cpp",
+		"best_practices/bp_render_pass.cpp",
+		"best_practices/bp_state_tracker.cpp",
+		"best_practices/bp_state.cpp",
+		"best_practices/bp_synchronization.cpp",
+		"best_practices/bp_utils.cpp",
+		"best_practices/bp_video.cpp",
+		"best_practices/bp_wsi.cpp",
+		"chassis/chassis_manual.cpp",
+		"chassis/dispatch_object_manual.cpp",
+		"containers/subresource_adapter.cpp",
+		"core_checks/cc_android.cpp",
+		"core_checks/cc_buffer.cpp",
+		"core_checks/cc_cmd_buffer_dynamic.cpp",
+		"core_checks/cc_cmd_buffer.cpp",
+		"core_checks/cc_copy_blit_resolve.cpp",
+		"core_checks/cc_data_graph.cpp",
+		"core_checks/cc_descriptor.cpp",
+		"core_checks/cc_device.cpp",
+		"core_checks/cc_device_memory.cpp",
+		"core_checks/cc_device_generated_commands.cpp",
+		"core_checks/cc_drawdispatch.cpp",
+		"core_checks/cc_external_object.cpp",
+		"core_checks/cc_image.cpp",
+		"core_checks/cc_image_layout.cpp",
+		"core_checks/cc_pipeline_compute.cpp",
+		"core_checks/cc_pipeline_graphics.cpp",
+		"core_checks/cc_pipeline_ray_tracing.cpp",
+		"core_checks/cc_pipeline.cpp",
+		"core_checks/cc_query.cpp",
+		"core_checks/cc_queue.cpp",
+		"core_checks/cc_ray_tracing.cpp",
+		"core_checks/cc_render_pass.cpp",
+		"core_checks/cc_spirv.cpp",
+		"core_checks/cc_shader_interface.cpp",
+		"core_checks/cc_shader_object.cpp",
+		"core_checks/cc_state_tracker.cpp",
+		"core_checks/cc_submit.cpp",
+		"core_checks/cc_sync_vuid_maps.cpp",
+		"core_checks/cc_synchronization.cpp",
+		"core_checks/cc_tensor.cpp",
+		"core_checks/cc_video.cpp",
+		"core_checks/cc_vuid_maps.cpp",
+		"core_checks/cc_wsi.cpp",
+		"core_checks/cc_ycbcr.cpp",
+		"drawdispatch/descriptor_validator.cpp",
+		"drawdispatch/drawdispatch_vuids.cpp",
+		"error_message/spirv_logging.cpp",
+		"external/vma/vma.cpp",
+		"vulkan/generated/best_practices.cpp",
+		"vulkan/generated/chassis.cpp",
+		"vulkan/generated/valid_enum_values.cpp",
+		"vulkan/generated/valid_flag_values.cpp",
+		"vulkan/generated/command_validation.cpp",
+		"vulkan/generated/deprecation.cpp",
+		"vulkan/generated/device_features.cpp",
+		"vulkan/generated/dynamic_state_helper.cpp",
+		"vulkan/generated/feature_not_present.cpp",
+		"vulkan/generated/dispatch_vector.cpp",
+		"vulkan/generated/dispatch_object.cpp",
+		"vulkan/generated/validation_object.cpp",
+		"vulkan/generated/object_tracker.cpp",
+		"vulkan/generated/spirv_grammar_helper.cpp",
+		"vulkan/generated/spirv_validation_helper.cpp",
+		"vulkan/generated/stateless_validation_helper.cpp",
+		"vulkan/generated/sync_validation_types.cpp",
+		"vulkan/generated/thread_safety.cpp",
+		"vulkan/generated/gpuav_offline_spirv.cpp",
+		"gpuav/core/gpuav_features.cpp",
+		"gpuav/core/gpuav_record.cpp",
+		"gpuav/core/gpuav_setup.cpp",
+		"gpuav/core/gpuav_settings.cpp",
+		"gpuav/core/gpuav_validation_pipeline.cpp",
+		"gpuav/validation_cmd/gpuav_validation_cmd_common.cpp",
+		"gpuav/validation_cmd/gpuav_draw.cpp",
+		"gpuav/validation_cmd/gpuav_dispatch.cpp",
+		"gpuav/validation_cmd/gpuav_trace_rays.cpp",
+		"gpuav/validation_cmd/gpuav_copy_buffer_to_image.cpp",
+		"gpuav/descriptor_validation/gpuav_descriptor_validation.cpp",
+		"gpuav/descriptor_validation/gpuav_descriptor_set.cpp",
+		"gpuav/debug_printf/debug_printf.cpp",
+		"gpuav/error_message/gpuav_vuids.cpp",
+		"gpuav/instrumentation/gpuav_shader_instrumentor.cpp",
+		"gpuav/instrumentation/gpuav_instrumentation.cpp",
+		"gpuav/instrumentation/buffer_device_address.cpp",
+		"gpuav/instrumentation/descriptor_checks.cpp",
+		"gpuav/instrumentation/post_process_descriptor_indexing.cpp",
+		"gpuav/resources/gpuav_state_trackers.cpp",
+		"gpuav/resources/gpuav_vulkan_objects.cpp",
+		"object_tracker/object_tracker_utils.cpp",
+		"state_tracker/buffer_state.cpp",
+		"state_tracker/cmd_buffer_state.cpp",
+		"state_tracker/data_graph_pipeline_session_state.cpp",
+		"state_tracker/descriptor_sets.cpp",
+		"state_tracker/device_generated_commands_state.cpp",
+		"state_tracker/device_memory_state.cpp",
+		"state_tracker/device_state.cpp",
+		"state_tracker/fence_state.cpp",
+		"state_tracker/image_layout_map.cpp",
+		"state_tracker/image_state.cpp",
+		"state_tracker/last_bound_state.cpp",
+		"state_tracker/pipeline_layout_state.cpp",
+		"state_tracker/pipeline_state.cpp",
+		"state_tracker/pipeline_library_state.cpp",
+		"state_tracker/semaphore_state.cpp",
+		"state_tracker/state_object.cpp",
+		"state_tracker/query_state.cpp",
+		"state_tracker/tensor_state.cpp",
+		"state_tracker/queue_state.cpp",
+		"state_tracker/render_pass_state.cpp",
+		"state_tracker/shader_instruction.cpp",
+		"state_tracker/shader_module.cpp",
+		"state_tracker/shader_object_state.cpp",
+		"state_tracker/shader_stage_state.cpp",
+		"state_tracker/state_tracker.cpp",
+		"state_tracker/video_session_state.cpp",
+		"state_tracker/wsi_state.cpp",
+		"stateless/sl_buffer.cpp",
+		"stateless/sl_cmd_buffer_dynamic.cpp",
+		"stateless/sl_cmd_buffer.cpp",
+		"stateless/sl_descriptor.cpp",
+		"stateless/sl_device_generated_commands.cpp",
+		"stateless/sl_device_memory.cpp",
+		"stateless/sl_external_object.cpp",
+		"stateless/sl_framebuffer.cpp",
+		"stateless/sl_image.cpp",
+		"stateless/sl_instance_device.cpp",
+		"stateless/sl_pipeline.cpp",
+		"stateless/sl_ray_tracing.cpp",
+		"stateless/sl_render_pass.cpp",
+		"stateless/sl_shader_object.cpp",
+		"stateless/sl_spirv.cpp",
+		"stateless/sl_synchronization.cpp",
+		"stateless/sl_tensor.cpp",
+		"stateless/sl_utils.cpp",
+		"stateless/sl_vuid_maps.cpp",
+		"stateless/sl_wsi.cpp",
+		"sync/sync_access_context.cpp",
+		"sync/sync_access_state.cpp",
+		"sync/sync_barrier.cpp",
+		"sync/sync_commandbuffer.cpp",
+		"sync/sync_common.cpp",
+		"sync/sync_error_messages.cpp",
+		"sync/sync_image.cpp",
+		"sync/sync_op.cpp",
+		"sync/sync_renderpass.cpp",
+		"sync/sync_reporting.cpp",
+		"sync/sync_stats.cpp",
+		"sync/sync_submit.cpp",
+		"sync/sync_validation.cpp",
+		"thread_tracker/thread_safety_validation.cpp",
+		"utils/shader_utils.cpp",
+		"layer_options.cpp"
+	};
+
+	const utilitySources = [_][]const u8{
+		"layer/vk_layer_settings.cpp",
+		"layer/vk_layer_settings_helper.cpp",
+		"layer/layer_settings_manager.cpp",
+		"layer/layer_settings_util.cpp",
+		"vulkan/vk_safe_struct_core.cpp",
+		"vulkan/vk_safe_struct_ext.cpp",
+		"vulkan/vk_safe_struct_khr.cpp",
+		"vulkan/vk_safe_struct_utils.cpp",
+		"vulkan/vk_safe_struct_vendor.cpp",
+		"vulkan/vk_safe_struct_manual.cpp"
+	};
+
+	const gpuavSpirvSources = [_][]const u8{
+		"descriptor_indexing_oob_pass.cpp",
+		"descriptor_class_general_buffer_pass.cpp",
+		"descriptor_class_texel_buffer_pass.cpp",
+		"buffer_device_address_pass.cpp",
+		"ray_query_pass.cpp",
+		"debug_printf_pass.cpp",
+		"post_process_descriptor_indexing_pass.cpp",
+		"vertex_attribute_fetch_oob.cpp",
+		"log_error_pass.cpp",
+		"function_basic_block.cpp",
+		"module.cpp",
+		"type_manager.cpp",
+		"pass.cpp",
+	};
+
+	var all_flags = std.array_list.Managed([]const u8).init(b.allocator);
+	all_flags.appendSlice(flags) catch unreachable;
+	switch(target.result.os.tag) {
+		.windows => {
+			all_flags.append("-DVK_USE_PLATFORM_WIN32_KHR") catch unreachable;
+		},
+		.linux, .freebsd, .openbsd, .dragonfly => {
+		},
+		.ios => {
+			all_flags.append("-DVK_USE_PLATFORM_METAL_EXT") catch unreachable;
+			all_flags.append("-VK_USE_PLATFORM_IOS_MVK") catch unreachable;
+		},
+		.macos => {
+			all_flags.append("-DVK_USE_PLATFORM_METAL_EXT") catch unreachable;
+			all_flags.append("-DVK_USE_PLATFORM_MACOS_MVK") catch unreachable;
+		},
+		else => {}
+	}
+	all_flags.append("-DVK_ENABLE_BETA_EXTENSIONS") catch unreachable;
+
+	const glslang = b.dependency("glslang", .{});
+	const spirvHeaders = b.dependency("SPIRV-Headers", .{});
+	const spirvTools = glslang.builder.dependency("SPIRV-Tools", .{});
+
+	layerslib.addIncludePath(headers.path("include"));
+	layerslib.addIncludePath(utilityLibraries.path("include"));
+	layerslib.addIncludePath(spirvHeaders.path("include"));
+	layerslib.addIncludePath(spirvTools.path("include"));
+	layerslib.addIncludePath(validationLayers.path("layers"));
+	layerslib.addIncludePath(validationLayers.path("layers/vulkan"));
+	layerslib.addIncludePath(validationLayers.path("layers/external"));
+	
+	layerslib.addCSourceFiles(.{ .root = utilityLibraries.path("src"), .files = &utilitySources, .flags = all_flags.items, });
+	layerslib.addCSourceFiles(.{ .root = validationLayers.path("layers"), .files = &layerSources, .flags = all_flags.items, });
+	layerslib.addCSourceFiles(.{ .root = validationLayers.path("layers/gpuav/spirv"), .files = &gpuavSpirvSources, .flags = all_flags.items, });
+	layerslib.linkLibrary(glslang.artifact("SPIRV-Tools"));
+	layerslib.linkLibrary(glslang.artifact("SPIRV-Tools-opt"));
+
+	const validationLayerJsonPath = validationLayers.path("layers/VkLayer_khronos_validation.json.in");
+	parentStep.dependOn(&b.addInstallLibFile(validationLayerJsonPath, "VkLayer_khronos_validation.json").step);
+
+	const install = b.addInstallArtifact(layerslib, .{});
+
+	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER these files have been installed
+	const sedLayerName = b.addSystemCommand(&.{"sed", "-i", "", "s|@JSON_LAYER_NAME@|VK_LAYER_KHRONOS_validation|g"});
+	const sedLayerLibPath = b.addSystemCommand(&.{"sed", "-i", "", "s|@JSON_LIBRARY_PATH@|./libVkLayer_khronos_validation.dylib|g"});
+	sedLayerName.addFileArg(b.path("zig-out/lib/VkLayer_khronos_validation.json"));
+	sedLayerLibPath.addFileArg(b.path("zig-out/lib/VkLayer_khronos_validation.json"));
+	sedLayerName.step.dependOn(&install.step);
+	sedLayerLibPath.step.dependOn(&install.step);
+
+	parentStep.dependOn(&sedLayerName.step);
+	parentStep.dependOn(&sedLayerLibPath.step);
+
+	return install;
 }
 
 pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
@@ -179,7 +471,6 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	const WinSys = enum {win32, x11, cocoa};
 
 	// TODO: Wayland
-	// TODO: Cocoa
 	const ws: WinSys = switch(os) {
 		.windows => .win32,
 		.linux => .x11,
@@ -334,6 +625,12 @@ pub fn build(b: *std.Build) !void {
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		subStep.dependOn(&install.step);
+
+		if(t.result.os.tag == .macos) {
+			const layersInstall = makeVulkanLayers(b, subStep, t, .ReleaseSmall, c_flags);
+			subStep.dependOn(&layersInstall.step);
+		}
+		
 		buildStep.dependOn(subStep);
 	}
 
@@ -343,6 +640,11 @@ pub fn build(b: *std.Build) !void {
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		nativeStep.dependOn(&install.step);
+
+		if(preferredTarget.result.os.tag == .macos) {
+			const layersInstall = makeVulkanLayers(b, nativeStep, preferredTarget, preferredOptimize, c_flags);
+			nativeStep.dependOn(&layersInstall.step);
+		}
 	}
 
 	{
