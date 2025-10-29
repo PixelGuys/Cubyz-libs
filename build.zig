@@ -65,7 +65,7 @@ const freetypeSources = [_][]const u8{
 	"src/winfonts/winfnt.c",
 };
 
-pub fn addVulkanApple(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) !void {
+pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.Step.Compile, name: []const u8, target: std.Build.ResolvedTarget, flags: []const []const u8) !void {
 	std.debug.assert(target.result.os.tag.isDarwin());
 
 	const headers = b.dependency("Vulkan-Headers", .{});
@@ -117,17 +117,17 @@ pub fn addVulkanApple(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std
 		.flags = allFlags.items,
 	});
 
-	// NOTE(blackedout): Add the MoltenVK binary and JSON manifest file
+	// NOTE(blackedout): Add the MoltenVK binary and JSON manifest file into the cubyz_deps_* directory
 	if(target.result.os.tag == .macos) {
 		const moltenvk = b.dependency("MoltenVK-macos", .{});
 		const moltenvkLibPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib");
 		const moltenvkJsonPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
-		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkLibPath, "libMoltenVK.dylib").step);
-		b.getInstallStep().dependOn(&b.addInstallLibFile(moltenvkJsonPath, "MoltenVK_icd.json").step);
+		step.dependOn(&b.addInstallLibFile(moltenvkLibPath, b.fmt("{s}/libMoltenVK.dylib", .{name})).step);
+		step.dependOn(&b.addInstallLibFile(moltenvkJsonPath, b.fmt("{s}/MoltenVK_icd.json", .{name})).step);
 	}
 }
 
-pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) !*std.Build.Step.InstallArtifact {
+pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) !*std.Build.Step.InstallArtifact {
 	const layerslib = b.addLibrary(.{.name = "VkLayer_khronos_validation", .root_module = b.createModule(.{
 		.target = target,
 		.optimize = optimize,
@@ -407,9 +407,9 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, target: std.
 	layerslib.linkLibrary(glslang.artifact("SPIRV-Tools-opt"));
 
 	const validationLayerJsonPath = validationLayers.path("layers/VkLayer_khronos_validation.json.in");
-	parentStep.dependOn(&b.addInstallLibFile(validationLayerJsonPath, "VkLayer_khronos_validation.json").step);
+	parentStep.dependOn(&b.addInstallLibFile(validationLayerJsonPath, b.fmt("{s}/VkLayer_khronos_validation.json", .{name})).step);
 
-	const install = b.addInstallArtifact(layerslib, .{});
+	const install = b.addInstallArtifact(layerslib, .{.dest_dir = .{.override = .{.custom = b.fmt("lib/{s}", .{name})}}});
 
 	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER these files have been installed
 	const tool = b.addExecutable(.{
@@ -420,12 +420,13 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, target: std.
 		}),
 	});
 
+	const jsonPath = b.path(b.fmt("zig-out/lib/{s}/VkLayer_khronos_validation.json", .{name}));
 	const sedLayerName = b.addRunArtifact(tool);
 	sedLayerName.addArgs(&.{"@JSON_LAYER_NAME@", "VK_LAYER_KHRONOS_validation"});
-	sedLayerName.addFileArg(b.path("zig-out/lib/VkLayer_khronos_validation.json"));
+	sedLayerName.addFileArg(jsonPath);
 	const sedLayerLibPath = b.addRunArtifact(tool);
 	sedLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "./libVkLayer_khronos_validation.dylib"});
-	sedLayerLibPath.addFileArg(b.path("zig-out/lib/VkLayer_khronos_validation.json"));
+	sedLayerLibPath.addFileArg(jsonPath);
 	sedLayerName.step.dependOn(&install.step);
 	sedLayerLibPath.step.dependOn(&install.step);
 
@@ -544,12 +545,9 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
 	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
-
-	// NOTE(blackedout): `addVulkan` is only tested/needed on macOS so far
 	if(target.result.os.tag == .macos) {
-		try addVulkanApple(b, c_lib, target, flags);
+		try addVulkanApple(b, step, c_lib, name, target, flags);
 	}
-
 	try addGLFWSources(b, c_lib, target, flags);
 	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
 
@@ -626,7 +624,7 @@ pub fn build(b: *std.Build) !void {
 		subStep.dependOn(&install.step);
 
 		if(t.result.os.tag == .macos) {
-			const layersInstall = try makeVulkanLayers(b, subStep, t, .ReleaseSmall, c_flags);
+			const layersInstall = try makeVulkanLayers(b, subStep, deps, t, .ReleaseSmall, c_flags);
 			subStep.dependOn(&layersInstall.step);
 		}
 
@@ -635,13 +633,14 @@ pub fn build(b: *std.Build) !void {
 
 	{
 		const name = preferredTarget.result.linuxTriple(b.allocator) catch unreachable;
-		const c_lib = try makeCubyzLibs(b, nativeStep, b.fmt("cubyz_deps_{s}", .{name}), preferredTarget, preferredOptimize, c_flags);
+		const deps = b.fmt("cubyz_deps_{s}", .{name});
+		const c_lib = try makeCubyzLibs(b, nativeStep, deps, preferredTarget, preferredOptimize, c_flags);
 		const install = b.addInstallArtifact(c_lib, .{});
 
 		nativeStep.dependOn(&install.step);
 
 		if(preferredTarget.result.os.tag == .macos) {
-			const layersInstall = try makeVulkanLayers(b, nativeStep, preferredTarget, preferredOptimize, c_flags);
+			const layersInstall = try makeVulkanLayers(b, nativeStep, deps, preferredTarget, preferredOptimize, c_flags);
 			nativeStep.dependOn(&layersInstall.step);
 		}
 	}

@@ -24,25 +24,20 @@ pub fn main() !void {
 	const replacement = args[2];
 	const filePath = args[3];
 
-	const outputFilePath = std.mem.concat(arena, u8, &.{filePath, ".tmp"}) catch |err| {
-		fatal("path allocation failed: {s}", .{@errorName(err)});
-	};
+	const outputFilePath = try std.mem.concat(arena, u8, &.{filePath, ".tmp"});
 	defer arena.free(outputFilePath);
 
 	if(std.fs.cwd().access(outputFilePath, .{.mode = .read_write})) |_| {
 		fatal("tmp output file '{s}' does already exist", .{outputFilePath});
 	} else |_| {}
 
-	const fileContents = std.fs.cwd().readFileAlloc(std.heap.page_allocator, filePath, 1024*1024*1024) catch |err| switch(err) {
-		error.FileTooBig => fatal("file too large (must not be larger than 1 GiB)", .{}),
+	const fileContents = std.fs.cwd().readFileAlloc(std.heap.page_allocator, filePath, std.math.maxInt(usize)) catch |err| switch(err) {
 		else => fatal("file reading failed: {s}", .{@errorName(err)}),
 	};
 	defer std.heap.page_allocator.free(fileContents);
 
 	const replacedSize = std.mem.replacementSize(u8, fileContents, pattern, replacement);
-	const replacementBuffer = std.heap.page_allocator.alloc(u8, replacedSize) catch |err| {
-		fatal("memory allocation failed: {s}", .{@errorName(err)});
-	};
+	const replacementBuffer = try std.heap.page_allocator.alloc(u8, replacedSize);
 	defer std.heap.page_allocator.free(replacementBuffer);
 	_ = std.mem.replace(u8, fileContents, pattern, replacement, replacementBuffer);
 
@@ -58,5 +53,4 @@ pub fn main() !void {
 
 fn fatal(comptime format: []const u8, args: anytype) noreturn {
 	std.debug.panic(format, args);
-	std.process.exit(1);
 }
