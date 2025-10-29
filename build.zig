@@ -412,9 +412,19 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, target: std.
 	const install = b.addInstallArtifact(layerslib, .{});
 
 	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER these files have been installed
-	const sedLayerName = b.addSystemCommand(&.{"sed", "-i", "", "s|@JSON_LAYER_NAME@|VK_LAYER_KHRONOS_validation|g"});
-	const sedLayerLibPath = b.addSystemCommand(&.{"sed", "-i", "", "s|@JSON_LIBRARY_PATH@|./libVkLayer_khronos_validation.dylib|g"});
+	const tool = b.addExecutable(.{
+		.name = "file_replace",
+		.root_module = b.createModule(.{
+			.root_source_file = b.path("tools/file_replace.zig"),
+			.target = b.graph.host,
+		}),
+	});
+
+	const sedLayerName = b.addRunArtifact(tool);
+	sedLayerName.addArgs(&.{"@JSON_LAYER_NAME@", "VK_LAYER_KHRONOS_validation"});
 	sedLayerName.addFileArg(b.path("zig-out/lib/VkLayer_khronos_validation.json"));
+	const sedLayerLibPath = b.addRunArtifact(tool);
+	sedLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "./libVkLayer_khronos_validation.dylib"});
 	sedLayerLibPath.addFileArg(b.path("zig-out/lib/VkLayer_khronos_validation.json"));
 	sedLayerName.step.dependOn(&install.step);
 	sedLayerLibPath.step.dependOn(&install.step);
