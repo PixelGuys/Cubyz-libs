@@ -1,6 +1,9 @@
 // NOTE(blackedout): Modified from https://ziglang.org/learn/build-system/#project-tools (2025-10-29)
+// Both the input and the output file will be present in memory simultaneously and entirely at some point,
+// so calling this for extremely large files might be a bad idea.
 
 const std = @import("std");
+const panic = std.debug.panic;
 
 const usage =
 	\\Usage: ./file_replace pattern replacement file
@@ -52,5 +55,5 @@ pub fn main() !void {
 }
 
 fn fatal(comptime format: []const u8, args: anytype) noreturn {
-	std.debug.panic(format, args);
+	panic(format, args);
 }

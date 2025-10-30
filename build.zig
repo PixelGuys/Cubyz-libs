@@ -127,7 +127,7 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 	}
 }
 
-pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) !*std.Build.Step.InstallArtifact {
+pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8) !void {
 	const layerslib = b.addLibrary(.{.name = "VkLayer_khronos_validation", .root_module = b.createModule(.{
 		.target = target,
 		.optimize = optimize,
@@ -407,11 +407,11 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 	layerslib.linkLibrary(glslang.artifact("SPIRV-Tools-opt"));
 
 	const validationLayerJsonPath = validationLayers.path("layers/VkLayer_khronos_validation.json.in");
-	parentStep.dependOn(&b.addInstallLibFile(validationLayerJsonPath, b.fmt("{s}/VkLayer_khronos_validation.json", .{name})).step);
+	const jsonInstall = b.addInstallLibFile(validationLayerJsonPath, b.fmt("{s}/VkLayer_khronos_validation.json", .{name}));
+	const libInstall = b.addInstallArtifact(layerslib, .{.dest_dir = .{.override = .{.custom = b.fmt("lib/{s}", .{name})}}});
+	parentStep.dependOn(&libInstall.step);
 
-	const install = b.addInstallArtifact(layerslib, .{.dest_dir = .{.override = .{.custom = b.fmt("lib/{s}", .{name})}}});
-
-	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER these files have been installed
+	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER it has been installed
 	const tool = b.addExecutable(.{
 		.name = "file_replace",
 		.root_module = b.createModule(.{
@@ -421,19 +421,17 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 	});
 
 	const jsonPath = b.path(b.fmt("zig-out/lib/{s}/VkLayer_khronos_validation.json", .{name}));
-	const sedLayerName = b.addRunArtifact(tool);
-	sedLayerName.addArgs(&.{"@JSON_LAYER_NAME@", "VK_LAYER_KHRONOS_validation"});
-	sedLayerName.addFileArg(jsonPath);
-	const sedLayerLibPath = b.addRunArtifact(tool);
-	sedLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "./libVkLayer_khronos_validation.dylib"});
-	sedLayerLibPath.addFileArg(jsonPath);
-	sedLayerName.step.dependOn(&install.step);
-	sedLayerLibPath.step.dependOn(&install.step);
+	const replaceLayerName = b.addRunArtifact(tool);
+	replaceLayerName.addArgs(&.{"@JSON_LAYER_NAME@", "VK_LAYER_KHRONOS_validation"});
+	replaceLayerName.addFileArg(jsonPath);
+	const replaceLayerLibPath = b.addRunArtifact(tool);
+	replaceLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "./libVkLayer_khronos_validation.dylib"});
+	replaceLayerLibPath.addFileArg(jsonPath);
 
-	parentStep.dependOn(&sedLayerName.step);
-	parentStep.dependOn(&sedLayerLibPath.step);
+	replaceLayerName.step.dependOn(&jsonInstall.step);
+	replaceLayerLibPath.step.dependOn(&replaceLayerName.step);
 
-	return install;
+	parentStep.dependOn(&replaceLayerLibPath.step);
 }
 
 pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
@@ -624,8 +622,7 @@ pub fn build(b: *std.Build) !void {
 		subStep.dependOn(&install.step);
 
 		if(t.result.os.tag == .macos) {
-			const layersInstall = try makeVulkanLayers(b, subStep, deps, t, .ReleaseSmall, c_flags);
-			subStep.dependOn(&layersInstall.step);
+			try makeVulkanLayers(b, subStep, deps, t, .ReleaseSmall, c_flags);
 		}
 
 		buildStep.dependOn(subStep);
@@ -640,8 +637,7 @@ pub fn build(b: *std.Build) !void {
 		nativeStep.dependOn(&install.step);
 
 		if(preferredTarget.result.os.tag == .macos) {
-			const layersInstall = try makeVulkanLayers(b, nativeStep, deps, preferredTarget, preferredOptimize, c_flags);
-			nativeStep.dependOn(&layersInstall.step);
+			try makeVulkanLayers(b, nativeStep, deps, preferredTarget, preferredOptimize, c_flags);
 		}
 	}
 
