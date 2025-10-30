@@ -17,8 +17,32 @@
 			.hash = "N-V-__8AAKLKpwC4H27Ps_0iL3bPkQb-z6ZVSrB-x_3EEkub",
 		},
 		.glslang = .{
-			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/4d2877072dc0ebb97698e6620a59e55ef3f367ce.tar.gz",
-			.hash = "glslang-1.4.309-eMn68Pu-CQBK98WlBPbet0hMUVM2hNWdVP4mKn1hNsD-",
+			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/cf74b30857e349c819c1c34ec717d4c9fc0eec5c.tar.gz",
+			.hash = "glslang-1.4.309-eMn68KLGCQDAuHVUzugaYOOEhbkyHmN526R7mHIq9YUs",
+		},
+		.@"Vulkan-Headers" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.330.tar.gz",
+			.hash = "N-V-__8AAFXYAQKsK51AAGXB9HziPDFjS_DVUq6_QHVxHrBM",
+		},
+		.@"Vulkan-Loader" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Loader/archive/refs/tags/v1.4.330.tar.gz",
+			.hash = "N-V-__8AAGYqgADJ4CSWkkwZd12lq-o6Y9ByBpscPmS_tpH4",
+		},
+		.@"MoltenVK-macos" = .{
+			.url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.0/MoltenVK-macos.tar",
+			.hash = "N-V-__8AAO62gwMuCOpZesC2YsUnsRFbbzsCigpvKBUl8QwB",
+		},
+		.@"Vulkan-Utility-Libraries" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/v1.4.330.tar.gz",
+			.hash = "N-V-__8AAPKLeADUZQZzoYbObh2HUYR9pBncy2MDKFCCqtXz",
+		},
+		.@"SPIRV-Headers" = .{
+			.url = "https://github.com/KhronosGroup/SPIRV-Headers/archive/6bb105b6c4b3a246e1e6bb96366fe14c6dbfde83.tar.gz",
+			.hash = "N-V-__8AAP75OgDs2RQmQLAddfjvhD4RXblO1kSMg0ZvpCC1",
+		},
+		.@"Vulkan-ValidationLayers" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-ValidationLayers/archive/refs/tags/v1.4.330.tar.gz",
+			.hash = "N-V-__8AAHvZ7QLIOvinD_aUpUBYF-rgwHYY6ZQXNHcltRfd",
 		},
 	},
 }
