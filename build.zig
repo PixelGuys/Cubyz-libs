@@ -119,11 +119,28 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 
 	// NOTE(blackedout): Add the MoltenVK binary and JSON manifest file into the cubyz_deps_* directory
 	if(target.result.os.tag == .macos) {
-		const moltenvk = b.dependency("MoltenVK-macos", .{});
-		const moltenvkLibPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib");
-		const moltenvkJsonPath = moltenvk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
-		step.dependOn(&b.addInstallLibFile(moltenvkLibPath, b.fmt("{s}/libMoltenVK.dylib", .{name})).step);
-		step.dependOn(&b.addInstallLibFile(moltenvkJsonPath, b.fmt("{s}/MoltenVK_icd.json", .{name})).step);
+		const moltenVk = b.dependency("MoltenVK-macos", .{});
+		const moltenVkLibPath = moltenVk.path("MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib");
+		const moltenVkJsonPath = moltenVk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
+		step.dependOn(&b.addInstallLibFile(moltenVkLibPath, b.fmt("{s}/libMoltenVK.dylib", .{name})).step);
+
+		const moltenVkJsonInstall = b.addInstallLibFile(moltenVkJsonPath, b.fmt("{s}/MoltenVK_icd.json", .{name}));
+		step.dependOn(&moltenVkJsonInstall.step);
+
+		const tool = b.addExecutable(.{
+			.name = "file_replace",
+			.root_module = b.createModule(.{
+				.root_source_file = b.path("tools/file_replace.zig"),
+				.target = b.graph.host,
+			}),
+		});
+
+		const replaceMoltenvkLibPath = b.addRunArtifact(tool);
+		replaceMoltenvkLibPath.addArgs(&.{"./libMoltenVK.dylib", "libMoltenVK.dylib"});
+		replaceMoltenvkLibPath.addFileArg(b.path(b.fmt("zig-out/lib/{s}/MoltenVK_icd.json", .{name})));
+
+		replaceMoltenvkLibPath.step.dependOn(&moltenVkJsonInstall.step);
+		step.dependOn(&replaceMoltenvkLibPath.step);
 	}
 }
 
@@ -425,7 +442,7 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 	replaceLayerName.addArgs(&.{"@JSON_LAYER_NAME@", "VK_LAYER_KHRONOS_validation"});
 	replaceLayerName.addFileArg(jsonPath);
 	const replaceLayerLibPath = b.addRunArtifact(tool);
-	replaceLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "./libVkLayer_khronos_validation.dylib"});
+	replaceLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "libVkLayer_khronos_validation.dylib"});
 	replaceLayerLibPath.addFileArg(jsonPath);
 
 	replaceLayerName.step.dependOn(&jsonInstall.step);
