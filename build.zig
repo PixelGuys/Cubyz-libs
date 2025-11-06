@@ -542,6 +542,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
 	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
+	c_lib.installHeader(b.path("include/cgltf.h"), "cgltf.h");
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	if(target.result.os.tag == .macos) {
 		try addVulkanApple(b, step, c_lib, name, target, flags);
@@ -554,7 +555,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags});
 	}
 
-	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
+	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c", "lib/cgltf.c"}, .flags = flags});
 	const glslang = b.dependency("glslang", .{
 		.target = target,
 		.optimize = optimize,
