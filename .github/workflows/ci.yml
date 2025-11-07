@@ -11,12 +11,19 @@ on:
 jobs:
   format_check:
     runs-on: ubuntu-latest
+    name: Format Check
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-    - name: Check Format
-      run: python3 "format_check.py"
+      - uses: actions/checkout@v4
+      - run: wget -O ./Cubyz-fmt https://github.com/PixelGuys/Cubyz-formatter/releases/download/0.15.0-dev.1034%2Bbd97b6618/Cubyz-fmt-x86_64-linux
+      - run: chmod +x ./Cubyz-fmt
+      - run: |
+          if ./Cubyz-fmt *.zig | grep -q . ; then
+            git diff --color=always;
+            exit 1;
+          fi
+      - run: |
+          if ./Cubyz-fmt --zon *.zon | grep -q . ; then
+            git diff --color=always;
+            exit 1;
+          fi
