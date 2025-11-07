@@ -187,7 +187,7 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 		"core_checks/cc_android.cpp",
 		"core_checks/cc_buffer.cpp",
 		"core_checks/cc_cmd_buffer_dynamic.cpp",
-		"core_checks/cc_cmd_buffer.cpp",
+	    "core_checks/cc_cmd_buffer.cpp",
 		"core_checks/cc_copy_blit_resolve.cpp",
 		"core_checks/cc_data_graph.cpp",
 		"core_checks/cc_descriptor.cpp",
