@@ -23,7 +23,7 @@ jobs:
             exit 1;
           fi
       - run: |
-          shopt -s nullglob
-          for file in *.zon ; do
-            zig ast-check $file
-          done
+          if ./Cubyz-fmt --zon *.zon ; then
+            git diff --color=always;
+            exit 1;
+          fi
