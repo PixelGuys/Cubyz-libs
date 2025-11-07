@@ -14,7 +14,7 @@
 		},
 		.freetype = .{
 			.url = "https://github.com/freetype/freetype/archive/refs/tags/VER-2-13-2.tar.gz",
-			.hash = "N-V-__8AAKLKpwC4H27Ps_0iL3bPkQb-z6ZVSrB-x_3EEkub"
+			.hash = "N-V-__8AAKLKpwC4H27Ps_0iL3bPkQb-z6ZVSrB-x_3EEkub",
 		},
 		.glslang = .{
 			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/cf74b30857e349c819c1c34ec717d4c9fc0eec5c.tar.gz",
