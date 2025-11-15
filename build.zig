@@ -458,7 +458,6 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 pub fn addCGltf(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 
-	c_lib.root_module.addCMacro("CGLTF_IMPLEMENTATION", "");
 	c_lib.addIncludePath(cgltf.path(""));
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
 	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c"}, .flags = flags});
