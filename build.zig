@@ -455,12 +455,13 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 	c_lib.linkLibCpp();
 }
 
-pub fn addCGltf(b: *std.Build, c_lib: *std.Build.Step.Compile) void {
+pub fn addCGltf(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 
+	c_lib.root_module.addCMacro("CGLTF_IMPLEMENTATION", "");
 	c_lib.addIncludePath(cgltf.path(""));
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
-	c_lib.root_module.addCMacro("CGLTF_IMPLEMENTATION", "1");
+	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c"}, .flags = flags});
 }
 
 pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) !void {
@@ -550,7 +551,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
 	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
-	addCGltf(b, c_lib);
+	addCGltf(b, c_lib, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	if(target.result.os.tag == .macos) {
 		try addVulkanApple(b, step, c_lib, name, target, flags);
