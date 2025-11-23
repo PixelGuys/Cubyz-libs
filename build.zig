@@ -526,7 +526,6 @@ pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
-
 	const c_lib = b.addLibrary(.{.name = name, .root_module = b.createModule(.{
 		.target = target,
 		.optimize = optimize,
