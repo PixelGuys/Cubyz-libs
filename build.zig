@@ -20,6 +20,22 @@ fn addPackageCSourceFiles(exe: *std.Build.Step.Compile, dep: *std.Build.Dependen
 	});
 }
 
+/// Helper to run the file_replace tool
+fn patchFile(
+    b: *std.Build, 
+    tool: *std.Build.Step.Compile, 
+    find: []const u8, 
+    replace: []const u8, 
+    file_path: []const u8, 
+    dependency: ?*std.Build.Step
+) *std.Build.Step {
+    const cmd = b.addRunArtifact(tool);
+    cmd.addArgs(&.{ find, replace });
+    cmd.addFileArg(b.path(file_path));
+    if(dependency) |dep| cmd.step.dependOn(dep);
+    return &cmd.step;
+}
+
 const freetypeSources = [_][]const u8{
 	"src/autofit/autofit.c",
 	"src/base/ftbase.c",
@@ -513,6 +529,42 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	}
 }
 
+pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile,flags: []const []const u8, replace_tool: *std.Build.Step.Compile) void {
+	const miniaudio = b.dependency("miniaudio", .{});
+	c_lib.addIncludePath(miniaudio.path(""));
+	
+	const stbVorbisHeaderInstall = b.addInstallFile(miniaudio.path("extras/stb_vorbis.c"), "stb/stb_vorbis.h");
+	c_lib.step.dependOn(&stbVorbisHeaderInstall.step);
+	//c_lib.addCSourceFile(.{.file = miniaudio.path("extras/stb_vorbis.c"), .flags = flags});
+	
+	const maHeaderInstall = b.addInstallFile(miniaudio.path("extras/miniaudio_split/miniaudio.h"), "include/miniaudio.h");
+    c_lib.step.dependOn(&maHeaderInstall.step);
+	
+	//Patch miniaudio.h to avoid "loop dependency" issues when translating c to zig.
+	const maHeaderPath = b.pathJoin(&.{ "zig-out", "include", "miniaudio.h" });
+	const replacements = [_][2][]const u8{
+        .{ "proc)(ma_device*", "proc)(void*" },
+        .{ "const ma_device_notification*", "const void*" },
+    };
+	var lastStep = &maHeaderInstall.step;
+    for (replacements) |pair| {
+        lastStep = patchFile(b, replace_tool, pair[0], pair[1], maHeaderPath, lastStep);
+    }
+	c_lib.step.dependOn(lastStep);
+
+	//We have to include the stb_vorbis header with miniaudio so that miniaudio knows it has access to the decoder
+	const genStep = b.addWriteFiles();
+    const wrapperFile = genStep.add("miniaudio_stbvorbis.c", 
+        \\#define STB_VORBIS_HEADER_ONLY
+        \\#include "extras/stb_vorbis.c"
+        \\#include "extras/miniaudio_split/miniaudio.c"
+        \\#undef STB_VORBIS_HEADER_ONLY
+        \\#include "extras/stb_vorbis.c"
+    );
+	c_lib.step.dependOn(&genStep.step);
+	c_lib.addCSourceFile(.{.file = wrapperFile, .flags = flags});
+}
+
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 
@@ -520,9 +572,8 @@ pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
-	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
-	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
-	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
+	
+	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c"}, .flags = flags});
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
@@ -553,6 +604,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 
 	addHeaderOnlyLibs(b, c_lib, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
+	addMiniaudioAndStbVorbis(b, c_lib, flags, replace_tool);
 	if(target.result.os.tag == .macos) {
 		try addVulkanApple(b, step, c_lib, name, target, flags, replace_tool);
 	}
