@@ -48,5 +48,9 @@
 			.url = "https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz",
 			.hash = "N-V-__8AAKFjBABZzn84N4iiLQyNQSMVsv5XBJSvZTPcQL2H",
 		},
+		.miniaudio = .{
+			.url = "https://github.com/mackron/miniaudio/archive/refs/tags/0.11.23.tar.gz",
+			.hash = "N-V-__8AAPu4vwC_P5AHlL_kEON58uGgrDcJSjGq9Hc5yadh",
+		},
 	},
 }
