@@ -529,7 +529,7 @@ pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.installHeader(miniaudio.path("extras/stb_vorbis.c"), "stb/stb_vorbis.h");
 	const miniaudioHeaderInstall = b.addInstallFile(miniaudio.path("extras/miniaudio_split/miniaudio.h"), "include/miniaudio.h");
 
-	//Patch miniaudio.h to avoid "loop dependency" issues when translating c to zig.
+	// Patch miniaudio.h to avoid "loop dependency" issues when translating c to zig.
 	const miniaudioHeaderPath = b.pathJoin(&.{"zig-out", "include", "miniaudio.h"});
 	const replacements = [_][2][]const u8{
 		.{"proc)(ma_device*", "proc)(void*"},
@@ -541,7 +541,7 @@ pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	}
 	c_lib.step.dependOn(lastStep);
 
-	//Wrap miniaudio with stb_vorbis so that it can use it internally.
+	// Wrap miniaudio with stb_vorbis so that it can use it internally.
 	const genStep = b.addWriteFiles();
 	const wrapperFile = genStep.add("miniaudio_stbvorbis.c",
 		\\#define STB_VORBIS_HEADER_ONLY
