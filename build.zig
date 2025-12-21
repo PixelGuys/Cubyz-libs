@@ -440,7 +440,10 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 
 	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER it has been installed
 	const jsonPath = b.pathJoin(&.{"zig-out", "lib", name, "VkLayer_khronos_validation.json"});
-	const replacements: []const ReplacementPair = &.{.{.find = "@JSON_LAYER_NAME@", .replace = "VK_LAYER_KHRONOS_validation"}, .{.find = "@JSON_LIBRARY_PATH@", .replace = "libVkLayer_khronos_validation.dylib"}};
+	const replacements: []const ReplacementPair = &.{
+		.{.find = "@JSON_LAYER_NAME@", .replace = "VK_LAYER_KHRONOS_validation"},
+		.{.find = "@JSON_LIBRARY_PATH@", .replace = "libVkLayer_khronos_validation.dylib"},
+	};
 	const replacementStep = patchFile(b, replace_tool, replacements, jsonPath, &jsonInstall.step);
 	parentStep.dependOn(replacementStep);
 }
@@ -532,7 +535,10 @@ pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 
 	// Patch miniaudio.h to avoid "loop dependency" issues when translating c to zig.
 	const miniaudioHeaderPath = b.pathJoin(&.{"zig-out", "include", "miniaudio.h"});
-	const replacements: []const ReplacementPair = &.{.{.find = "proc)(ma_device*", .replace = "proc)(void*"}, .{.find = "const ma_device_notification*", .replace = "const void*"}};
+	const replacements: []const ReplacementPair = &.{
+		.{.find = "proc)(ma_device*", .replace = "proc)(void*"},
+		.{.find = "const ma_device_notification*", .replace = "const void*"},
+	};
 	const replacementStep = patchFile(b, replace_tool, replacements, miniaudioHeaderPath, &miniaudioHeaderInstall.step);
 	c_lib.step.dependOn(replacementStep);
 
