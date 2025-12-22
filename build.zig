@@ -146,7 +146,7 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 		const moltenVkJsonInstall = b.addInstallLibFile(moltenVkJsonPath, b.fmt("{s}/MoltenVK_icd.json", .{name}));
 		step.dependOn(&moltenVkJsonInstall.step);
 
-		const jsonPath = b.pathJoin(&.{"zig-out", "lib", name, "MoltenVK_icd.json"});
+		const jsonPath = b.fmt("zig-out/lib{s}/MoltenVK_icd.json", .{name});
 		const replacements: []const ReplacementPair = &.{.{.find = "./libMoltenVK.dylib", .replace = "libMoltenVK.dylib"}};
 		const replaceMoltenvkLibPathStep = patchFile(b, replace_tool, replacements, jsonPath, &moltenVkJsonInstall.step);
 
@@ -439,7 +439,7 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 	parentStep.dependOn(&libInstall.step);
 
 	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER it has been installed
-	const jsonPath = b.pathJoin(&.{"zig-out", "lib", name, "VkLayer_khronos_validation.json"});
+	const jsonPath = b.fmt("zig-out/lib/{s}/VkLayer_khronos_validation.json", .{name});
 	const replacements: []const ReplacementPair = &.{
 		.{.find = "@JSON_LAYER_NAME@", .replace = "VK_LAYER_KHRONOS_validation"},
 		.{.find = "@JSON_LIBRARY_PATH@", .replace = "libVkLayer_khronos_validation.dylib"},
@@ -533,8 +533,8 @@ pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.installHeader(miniaudio.path("extras/stb_vorbis.c"), "stb/stb_vorbis.h");
 	const miniaudioHeaderInstall = b.addInstallFile(miniaudio.path("extras/miniaudio_split/miniaudio.h"), "include/miniaudio.h");
 
-	// Patch miniaudio.h to avoid "loop dependency" issues (see: https://github.com/ziglang/zig/issues/12325)
-	const miniaudioHeaderPath = b.pathJoin(&.{"zig-out", "include", "miniaudio.h"});
+	// Patch miniaudio.h to avoid "dependency loop" issues (see: https://github.com/ziglang/zig/issues/12325)
+	const miniaudioHeaderPath: []const u8 = "zig-out/include/miniaudio.h";
 	const replacements: []const ReplacementPair = &.{
 		.{.find = "proc)(ma_device*", .replace = "proc)(void*"},
 		.{.find = "const ma_device_notification*", .replace = "const void*"},
