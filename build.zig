@@ -20,6 +20,25 @@ fn addPackageCSourceFiles(exe: *std.Build.Step.Compile, dep: *std.Build.Dependen
 	});
 }
 
+/// Helper to run the file_replace tool
+fn patchFile(b: *std.Build, tool: *std.Build.Step.Compile, replacements: []const ReplacementPair, filePath: []const u8, dependency: *std.Build.Step) *std.Build.Step {
+	var step = dependency;
+
+	for(replacements) |pair| {
+		const cmd = b.addRunArtifact(tool);
+		cmd.addArgs(&.{pair.find, pair.replace});
+		cmd.addFileArg(b.path(filePath));
+		cmd.step.dependOn(step);
+		step = &cmd.step;
+	}
+
+	return step;
+}
+const ReplacementPair = struct {
+	find: []const u8,
+	replace: []const u8,
+};
+
 const freetypeSources = [_][]const u8{
 	"src/autofit/autofit.c",
 	"src/base/ftbase.c",
@@ -127,12 +146,11 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 		const moltenVkJsonInstall = b.addInstallLibFile(moltenVkJsonPath, b.fmt("{s}/MoltenVK_icd.json", .{name}));
 		step.dependOn(&moltenVkJsonInstall.step);
 
-		const replaceMoltenvkLibPath = b.addRunArtifact(replace_tool);
-		replaceMoltenvkLibPath.addArgs(&.{"./libMoltenVK.dylib", "libMoltenVK.dylib"});
-		replaceMoltenvkLibPath.addFileArg(b.path(b.fmt("zig-out/lib/{s}/MoltenVK_icd.json", .{name})));
+		const jsonPath = b.fmt("zig-out/lib{s}/MoltenVK_icd.json", .{name});
+		const replacements: []const ReplacementPair = &.{.{.find = "./libMoltenVK.dylib", .replace = "libMoltenVK.dylib"}};
+		const replaceMoltenvkLibPathStep = patchFile(b, replace_tool, replacements, jsonPath, &moltenVkJsonInstall.step);
 
-		replaceMoltenvkLibPath.step.dependOn(&moltenVkJsonInstall.step);
-		step.dependOn(&replaceMoltenvkLibPath.step);
+		step.dependOn(replaceMoltenvkLibPathStep);
 	}
 }
 
@@ -421,18 +439,13 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 	parentStep.dependOn(&libInstall.step);
 
 	// NOTE(blackedout): Replace the layer name and lib path placeholders in the layer manifest JSON file AFTER it has been installed
-	const jsonPath = b.path(b.fmt("zig-out/lib/{s}/VkLayer_khronos_validation.json", .{name}));
-	const replaceLayerName = b.addRunArtifact(replace_tool);
-	replaceLayerName.addArgs(&.{"@JSON_LAYER_NAME@", "VK_LAYER_KHRONOS_validation"});
-	replaceLayerName.addFileArg(jsonPath);
-	const replaceLayerLibPath = b.addRunArtifact(replace_tool);
-	replaceLayerLibPath.addArgs(&.{"@JSON_LIBRARY_PATH@", "libVkLayer_khronos_validation.dylib"});
-	replaceLayerLibPath.addFileArg(jsonPath);
-
-	replaceLayerName.step.dependOn(&jsonInstall.step);
-	replaceLayerLibPath.step.dependOn(&replaceLayerName.step);
-
-	parentStep.dependOn(&replaceLayerLibPath.step);
+	const jsonPath = b.fmt("zig-out/lib/{s}/VkLayer_khronos_validation.json", .{name});
+	const replacements: []const ReplacementPair = &.{
+		.{.find = "@JSON_LAYER_NAME@", .replace = "VK_LAYER_KHRONOS_validation"},
+		.{.find = "@JSON_LIBRARY_PATH@", .replace = "libVkLayer_khronos_validation.dylib"},
+	};
+	const replacementStep = patchFile(b, replace_tool, replacements, jsonPath, &jsonInstall.step);
+	parentStep.dependOn(replacementStep);
 }
 
 pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) void {
@@ -513,6 +526,25 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	}
 }
 
+pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) void {
+	const miniaudio = b.dependency("miniaudio", .{});
+	c_lib.addIncludePath(miniaudio.path(""));
+
+	c_lib.installHeader(miniaudio.path("extras/stb_vorbis.c"), "stb/stb_vorbis.h");
+	const miniaudioHeaderInstall = b.addInstallFile(miniaudio.path("extras/miniaudio_split/miniaudio.h"), "include/miniaudio.h");
+
+	// Patch miniaudio.h to avoid "dependency loop" issues (see: https://github.com/ziglang/zig/issues/12325)
+	const miniaudioHeaderPath = "zig-out/include/miniaudio.h";
+	const replacements: []const ReplacementPair = &.{
+		.{.find = "proc)(ma_device*", .replace = "proc)(void*"},
+		.{.find = "const ma_device_notification*", .replace = "const void*"},
+	};
+	const replacementStep = patchFile(b, replace_tool, replacements, miniaudioHeaderPath, &miniaudioHeaderInstall.step);
+	c_lib.step.dependOn(replacementStep);
+
+	c_lib.addCSourceFile(.{.file = b.path("lib/miniaudio_stbvorbis.c"), .flags = flags});
+}
+
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 
@@ -520,9 +552,8 @@ pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
-	c_lib.installHeader(b.path("include/stb/stb_vorbis.h"), "stb/stb_vorbis.h");
-	c_lib.installHeader(b.path("include/miniaudio.h"), "miniaudio.h");
-	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c", "lib/stb_vorbis.c", "lib/miniaudio.c"}, .flags = flags});
+
+	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c"}, .flags = flags});
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
@@ -553,6 +584,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 
 	addHeaderOnlyLibs(b, c_lib, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
+	addMiniaudioAndStbVorbis(b, c_lib, flags, replace_tool);
 	if(target.result.os.tag == .macos) {
 		try addVulkanApple(b, step, c_lib, name, target, flags, replace_tool);
 	}
