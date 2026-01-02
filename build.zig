@@ -146,7 +146,7 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 		const moltenVkJsonInstall = b.addInstallLibFile(moltenVkJsonPath, b.fmt("{s}/MoltenVK_icd.json", .{name}));
 		step.dependOn(&moltenVkJsonInstall.step);
 
-		const jsonPath = b.fmt("zig-out/lib{s}/MoltenVK_icd.json", .{name});
+		const jsonPath = b.fmt("zig-out/lib/{s}/MoltenVK_icd.json", .{name});
 		const replacements: []const ReplacementPair = &.{.{.find = "./libMoltenVK.dylib", .replace = "libMoltenVK.dylib"}};
 		const replaceMoltenvkLibPathStep = patchFile(b, replace_tool, replacements, jsonPath, &moltenVkJsonInstall.step);
 
