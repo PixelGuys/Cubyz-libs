@@ -24,7 +24,7 @@ fn addPackageCSourceFiles(exe: *std.Build.Step.Compile, dep: *std.Build.Dependen
 fn patchFile(b: *std.Build, tool: *std.Build.Step.Compile, replacements: []const ReplacementPair, filePath: []const u8, dependency: *std.Build.Step) *std.Build.Step {
 	var step = dependency;
 
-	for(replacements) |pair| {
+	for (replacements) |pair| {
 		const cmd = b.addRunArtifact(tool);
 		cmd.addArgs(&.{pair.find, pair.replace});
 		cmd.addFileArg(b.path(filePath));
@@ -111,9 +111,9 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 
 	var allFlags: std.ArrayList([]const u8) = .{};
 	try allFlags.appendSlice(b.allocator, flags);
-	if(target.result.os.tag == .ios) {
+	if (target.result.os.tag == .ios) {
 		try allFlags.append(b.allocator, "-DVK_USE_PLATFORM_IOS_MVK");
-	} else if(target.result.os.tag == .macos) {
+	} else if (target.result.os.tag == .macos) {
 		try allFlags.append(b.allocator, "-DVK_USE_PLATFORM_MACOS_MVK");
 	}
 	try allFlags.appendSlice(b.allocator, &[_][]const u8{
@@ -137,7 +137,7 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 	});
 
 	// NOTE(blackedout): Add the MoltenVK binary and JSON manifest file into the cubyz_deps_* directory
-	if(target.result.os.tag == .macos) {
+	if (target.result.os.tag == .macos) {
 		const moltenVk = b.dependency("MoltenVK-macos", .{});
 		const moltenVkLibPath = moltenVk.path("MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib");
 		const moltenVkJsonPath = moltenVk.path("MoltenVK/dynamic/dylib/macOS/MoltenVK_icd.json");
@@ -386,7 +386,7 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 
 	var allFlags: std.ArrayList([]const u8) = .{};
 	try allFlags.appendSlice(b.allocator, flags);
-	switch(target.result.os.tag) {
+	switch (target.result.os.tag) {
 		.windows => {
 			try allFlags.append(b.allocator, "-DVK_USE_PLATFORM_WIN32_KHR");
 		},
@@ -457,7 +457,7 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 	c_lib.addIncludePath(freetype.path("include"));
 	c_lib.installHeadersDirectory(freetype.path("include"), "", .{});
 	addPackageCSourceFiles(c_lib, freetype, &freetypeSources, flags);
-	if(target.result.os.tag == .macos) c_lib.addCSourceFile(.{
+	if (target.result.os.tag == .macos) c_lib.addCSourceFile(.{
 		.file = freetype.path("src/base/ftmac.c"),
 		.flags = &.{},
 	});
@@ -474,10 +474,10 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	const root = glfw.path("src");
 	const os = target.result.os.tag;
 
-	const WinSys = enum {win32, x11, cocoa};
+	const WinSys = enum { win32, x11, cocoa };
 
 	// TODO: Wayland
-	const ws: WinSys = switch(os) {
+	const ws: WinSys = switch (os) {
 		.windows => .win32,
 		.linux => .x11,
 		.macos => .cocoa,
@@ -488,7 +488,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 			break :blk .x11;
 		},
 	};
-	const wsFlag = switch(ws) {
+	const wsFlag = switch (ws) {
 		.win32 => "-D_GLFW_WIN32",
 		.x11 => "-D_GLFW_X11",
 		.cocoa => "-D_GLFW_COCOA",
@@ -496,7 +496,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	var allFlags = try std.ArrayList([]const u8).initCapacity(b.allocator, 0);
 	try allFlags.appendSlice(b.allocator, flags);
 	try allFlags.append(b.allocator, wsFlag);
-	if(os == .linux) {
+	if (os == .linux) {
 		try allFlags.append(b.allocator, "-D_GNU_SOURCE");
 	}
 
@@ -504,20 +504,20 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	c_lib.installHeader(glfw.path("include/GLFW/glfw3.h"), "GLFW/glfw3.h");
 	const fileses: [3][]const []const u8 = .{
 		&.{"context.c", "init.c", "input.c", "monitor.c", "platform.c", "vulkan.c", "window.c", "egl_context.c", "osmesa_context.c", "null_init.c", "null_monitor.c", "null_window.c", "null_joystick.c"},
-		switch(os) {
+		switch (os) {
 			.windows => &.{"win32_module.c", "win32_time.c", "win32_thread.c"},
 			.linux => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
 			.macos => &.{"cocoa_time.c", "posix_module.c", "posix_thread.c"},
 			else => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
 		},
-		switch(ws) {
+		switch (ws) {
 			.win32 => &.{"win32_init.c", "win32_joystick.c", "win32_monitor.c", "win32_window.c", "wgl_context.c"},
 			.x11 => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c"},
 			.cocoa => &.{"cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
 		},
 	};
 
-	for(fileses) |files| {
+	for (fileses) |files| {
 		c_lib.addCSourceFiles(.{
 			.root = root,
 			.files = files,
@@ -563,7 +563,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	})});
 
 	// NOTE(blackedout): To cross compile on macOS to macOS, the SDK has to be set correctly
-	if(builtin.os.tag == .macos and target.result.os.tag == .macos) {
+	if (builtin.os.tag == .macos and target.result.os.tag == .macos) {
 		const sdkPathNewline = b.run(&.{"xcrun", "-sdk", "macosx", "--show-sdk-path"});
 		const sdkPath = sdkPathNewline[0..(sdkPathNewline.len - 1)];
 		c_lib.root_module.addSystemFrameworkPath(.{.cwd_relative = b.fmt("{s}/System/Library/Frameworks", .{sdkPath})});
@@ -577,7 +577,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 
 	// NOTE(blackedout): glad for Vulkan is not needed on macOS since the loader is currently statically linked.
 	// Whether or not glad can be used like Volk to bind the Vulkan functions directly to the driver, I don't know.
-	if(target.result.os.tag != .macos) {
+	if (target.result.os.tag != .macos) {
 		c_lib.installHeader(b.path("include/glad/vulkan.h"), "glad/vulkan.h");
 		c_lib.installHeader(b.path("include/vk_platform.h"), "vk_platform.h");
 	}
@@ -585,14 +585,14 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	addHeaderOnlyLibs(b, c_lib, flags);
 	addFreetypeAndHarfbuzz(b, c_lib, target, flags);
 	addMiniaudioAndStbVorbis(b, c_lib, flags, replace_tool);
-	if(target.result.os.tag == .macos) {
+	if (target.result.os.tag == .macos) {
 		try addVulkanApple(b, step, c_lib, name, target, flags, replace_tool);
 	}
 	try addGLFWSources(b, c_lib, target, flags);
 	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
 
 	// NOTE(blackedout): See the above glad comment
-	if(target.result.os.tag != .macos) {
+	if (target.result.os.tag != .macos) {
 		c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags});
 	}
 
@@ -660,7 +660,7 @@ pub fn build(b: *std.Build) !void {
 		}),
 	});
 
-	for(targets) |target| {
+	for (targets) |target| {
 		const t = b.resolveTargetQuery(target);
 		const name = t.result.linuxTriple(b.allocator) catch unreachable;
 		const subStep = b.step(name, b.fmt("Build only {s}", .{name}));
@@ -670,7 +670,7 @@ pub fn build(b: *std.Build) !void {
 
 		subStep.dependOn(&install.step);
 
-		if(t.result.os.tag == .macos) {
+		if (t.result.os.tag == .macos) {
 			try makeVulkanLayers(b, subStep, deps, t, .ReleaseSmall, c_flags, replace_tool);
 		}
 
@@ -685,7 +685,7 @@ pub fn build(b: *std.Build) !void {
 
 		nativeStep.dependOn(&install.step);
 
-		if(preferredTarget.result.os.tag == .macos) {
+		if (preferredTarget.result.os.tag == .macos) {
 			try makeVulkanLayers(b, nativeStep, deps, preferredTarget, preferredOptimize, c_flags, replace_tool);
 		}
 	}
