@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: wget -O ./Cubyz-fmt https://github.com/PixelGuys/Cubyz-formatter/releases/download/0.15.0-dev.1034%2Bbd97b6618/Cubyz-fmt-x86_64-linux
+      - run: wget -O ./Cubyz-fmt https://github.com/PixelGuys/Cubyz-formatter/releases/download/0.16.0-dev.1424+3/Cubyz-fmt-x86_64-linux
       - run: chmod +x ./Cubyz-fmt
       - run: |
           if ./Cubyz-fmt *.zig | grep -q . ; then
