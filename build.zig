@@ -84,6 +84,118 @@ const freetypeSources = [_][]const u8{
 	"src/winfonts/winfnt.c",
 };
 
+const tfPsaCryptoCoreSources: []const []const u8 = &.{
+	"psa_crypto.c",
+	"psa_crypto_client.c",
+	"psa_crypto_slot_management.c",
+	"psa_crypto_storage.c",
+	"psa_its_file.c",
+	"tf_psa_crypto_config.c",
+	"tf_psa_crypto_version.c",
+};
+
+const tfPsaCryptoDriverSources: []const []const u8 = &.{
+	"aes.c",
+	"aesce.c",
+	"aesni.c",
+	"aria.c",
+	"asn1parse.c",
+	"asn1write.c",
+	"base64.c",
+	"bignum.c",
+	"bignum_core.c",
+	"bignum_mod.c",
+	"bignum_mod_raw.c",
+	"block_cipher.c",
+	"camellia.c",
+	"ccm.c",
+	"chacha20.c",
+	"chachapoly.c",
+	"cipher.c",
+	"cipher_wrap.c",
+	"cmac.c",
+	"constant_time.c",
+	"ctr_drbg.c",
+	"ecdh.c",
+	"ecdsa.c",
+	"ecjpake.c",
+	"ecp.c",
+	"ecp_curves.c",
+	"ecp_curves_new.c",
+	"entropy.c",
+	"entropy_poll.c",
+	"gcm.c",
+	"hmac_drbg.c",
+	"lmots.c",
+	"lms.c",
+	"md.c",
+	"md5.c",
+	"memory_buffer_alloc.c",
+	"nist_kw.c",
+	"oid.c",
+	"pem.c",
+	"pk.c",
+	"pk_ecc.c",
+	"pk_rsa.c",
+	"pk_wrap.c",
+	"pkcs5.c",
+	"pkparse.c",
+	"pkwrite.c",
+	"platform.c",
+	"platform_util.c",
+	"poly1305.c",
+	"psa_crypto_aead.c",
+	"psa_crypto_cipher.c",
+	"psa_crypto_ecp.c",
+	"psa_crypto_ffdh.c",
+	"psa_crypto_hash.c",
+	"psa_crypto_mac.c",
+	"psa_crypto_pake.c",
+	"psa_crypto_rsa.c",
+	"psa_util.c",
+	"ripemd160.c",
+	"rsa.c",
+	"rsa_alt_helpers.c",
+	"sha1.c",
+	"sha256.c",
+	"sha3.c",
+	"sha512.c",
+	"threading.c",
+};
+
+const mbedTlsSources: []const []const u8 = &.{
+	"mbedtls_config.c",
+	"pkcs7.c",
+	"x509.c",
+	"x509_create.c",
+	"x509_crl.c",
+	"x509_crt.c",
+	"x509_csr.c",
+	"x509_oid.c",
+	"x509write.c",
+	"x509write_crt.c",
+	"x509write_csr.c",
+	"debug.c",
+	"mps_reader.c",
+	"mps_trace.c",
+	"net_sockets.c",
+	"ssl_cache.c",
+	"ssl_ciphersuites.c",
+	"ssl_client.c",
+	"ssl_cookie.c",
+	"ssl_msg.c",
+	"ssl_ticket.c",
+	"ssl_tls.c",
+	"ssl_tls12_client.c",
+	"ssl_tls12_server.c",
+	"ssl_tls13_keys.c",
+	"ssl_tls13_server.c",
+	"ssl_tls13_client.c",
+	"ssl_tls13_generic.c",
+	"timing.c",
+	"version.c",
+};
+
 pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.Step.Compile, name: []const u8, target: std.Build.ResolvedTarget, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !void {
 	std.debug.assert(target.result.os.tag.isDarwin());
 
@@ -545,6 +657,45 @@ pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.addCSourceFile(.{.file = b.path("lib/miniaudio_stbvorbis.c"), .flags = flags});
 }
 
+pub fn addMbedTls(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
+	const mbedtls = b.dependency("mbedtls", .{});
+	const tfPsaCrypto = b.dependency("tf_psa_crypto", .{});
+	c_lib.addCSourceFiles(.{
+		.root = mbedtls.path("library"),
+		.files = mbedTlsSources,
+		.flags = flags,
+	});
+	c_lib.addCSourceFiles(.{
+		.root = tfPsaCrypto.path("core"),
+		.files = tfPsaCryptoCoreSources,
+		.flags = flags,
+	});
+	c_lib.addCSourceFiles(.{
+		.root = tfPsaCrypto.path("drivers/builtin/src"),
+		.files = tfPsaCryptoDriverSources,
+		.flags = flags,
+	});
+	c_lib.addCSourceFile(.{
+		.file = b.path("lib/tf_psa_crypto/psa_crypto_driver_wrappers_no_static.c"), // Generated file
+		.flags = flags,
+	});
+	c_lib.addCSourceFiles(.{
+		.root = b.path("lib/mbedtls"),
+		.files = &.{"error.c", "ssl_debug_helpers_generated.c", "version_features.c"}, // Generated files
+		.flags = flags,
+	});
+	c_lib.addIncludePath(b.path("lib/tf_psa_crypto")); // Contains generated files
+	c_lib.addIncludePath(b.path("lib/mbedtls")); // Contains generated files
+	c_lib.addIncludePath(tfPsaCrypto.path("core"));
+	c_lib.addIncludePath(tfPsaCrypto.path("drivers/builtin/src"));
+	c_lib.addIncludePath(tfPsaCrypto.path("include"));
+	c_lib.addIncludePath(tfPsaCrypto.path("drivers/builtin/include"));
+	c_lib.addIncludePath(mbedtls.path("include"));
+	c_lib.installHeadersDirectory(mbedtls.path("include"), "", .{});
+	c_lib.installHeadersDirectory(tfPsaCrypto.path("include"), "", .{});
+	c_lib.installHeadersDirectory(tfPsaCrypto.path("drivers/builtin/include"), "", .{});
+}
+
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 
@@ -589,6 +740,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		try addVulkanApple(b, step, c_lib, name, target, flags, replace_tool);
 	}
 	try addGLFWSources(b, c_lib, target, flags);
+	addMbedTls(b, c_lib, flags);
 	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
 
 	// NOTE(blackedout): See the above glad comment

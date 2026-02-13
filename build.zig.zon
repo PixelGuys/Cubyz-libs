@@ -52,5 +52,13 @@
 			.url = "https://github.com/mackron/miniaudio/archive/refs/tags/0.11.23.tar.gz",
 			.hash = "N-V-__8AAPu4vwC_P5AHlL_kEON58uGgrDcJSjGq9Hc5yadh",
 		},
+		.mbedtls = .{
+			.url = "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/mbedtls-4.0.0.tar.gz",
+			.hash = "N-V-__8AAKIwiADtY89ifMh8C6X0PHvyBULclU19OYMsiDg_",
+		},
+		.tf_psa_crypto = .{
+			.url = "https://github.com/Mbed-TLS/TF-PSA-Crypto/archive/refs/tags/tf-psa-crypto-1.0.0.tar.gz",
+			.hash = "N-V-__8AAOuqOgGAlxfU32chMWurMwBPZACZk-9MdknRMDIM",
+		},
 	},
 }
