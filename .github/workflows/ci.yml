@@ -18,12 +18,7 @@ jobs:
       - run: wget -O ./Cubyz-fmt https://github.com/PixelGuys/Cubyz-formatter/releases/download/0.16.0-dev.1424+3/Cubyz-fmt-x86_64-linux
       - run: chmod +x ./Cubyz-fmt
       - run: |
-          if ./Cubyz-fmt *.zig | grep -q . ; then
-            git diff --color=always;
-            exit 1;
-          fi
-      - run: |
-          if ./Cubyz-fmt --zon *.zon | grep -q . ; then
+          if ./Cubyz-fmt *.zig *.zon | grep -q . ; then
             git diff --color=always;
             exit 1;
           fi
