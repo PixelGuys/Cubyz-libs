@@ -17,8 +17,8 @@
 			.hash = "N-V-__8AAKLKpwC4H27Ps_0iL3bPkQb-z6ZVSrB-x_3EEkub",
 		},
 		.glslang = .{
-			.url = "https://github.com/Games-by-Mason/glslang-zig/archive/cf74b30857e349c819c1c34ec717d4c9fc0eec5c.tar.gz",
-			.hash = "glslang-1.4.309-eMn68KLGCQDAuHVUzugaYOOEhbkyHmN526R7mHIq9YUs",
+			.url = "https://codeberg.org/Games-by-Mason/glslang_zig/archive/v1.0.1+1.4.309.tar.gz",
+			.hash = "glslang-1.0.1+1.4.309-eMn68GHJCQDNzeSpilELiLfzDAVrjQGkGryaCcCzFTFY",
 		},
 		.@"Vulkan-Headers" = .{
 			.url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.330.tar.gz",
