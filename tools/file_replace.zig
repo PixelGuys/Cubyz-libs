@@ -12,23 +12,23 @@ const usage =
 var threadedIo: std.Io.Threaded = undefined;
 pub var io: std.Io = threadedIo.io();
 
-pub fn main(args: std.process.Init.Minimal) !void {
+pub fn main(init: std.process.Init.Minimal) !void {
 	var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
 	defer arena_state.deinit();
 	const arena = arena_state.allocator();
 
-	const argsAlloc = try args.args.toSlice(arena);
-	if (argsAlloc.len != 4) {
+	const args = try init.args.toSlice(arena);
+	if (args.len != 4) {
 		try std.Io.File.stdout().writeStreamingAll(io, usage);
 		return std.process.cleanExit(io);
 	}
 
-	const pattern = argsAlloc[1];
+	const pattern = args[1];
 	if (pattern.len == 0) {
 		fatal("pattern is empty (not allowed)", .{});
 	}
-	const replacement = argsAlloc[2];
-	const filePath = argsAlloc[3];
+	const replacement = args[2];
+	const filePath = args[3];
 
 	const outputFilePath = try std.mem.concat(arena, u8, &.{filePath, ".tmp"});
 	defer arena.free(outputFilePath);
