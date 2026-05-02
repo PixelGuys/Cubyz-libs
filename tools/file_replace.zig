@@ -9,15 +9,10 @@ const usage =
 	\\Usage: ./file_replace pattern replacement file
 ;
 
-var threadedIo: std.Io.Threaded = undefined;
-pub var io: std.Io = threadedIo.io();
-
-pub fn main(init: std.process.Init.Minimal) !void {
-	var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-	defer arena_state.deinit();
-	const arena = arena_state.allocator();
-
-	const args = try init.args.toSlice(arena);
+pub fn main(init: std.process.Init) !void {
+	const arena = init.arena.allocator();
+	const io = init.io;
+	const args = try init.minimal.args.toSlice(arena);
 	if (args.len != 4) {
 		try std.Io.File.stdout().writeStreamingAll(io, usage);
 		return std.process.cleanExit(io);
