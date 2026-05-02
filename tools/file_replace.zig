@@ -37,7 +37,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 		fatal("tmp output file '{s}' does already exist", .{outputFilePath});
 	} else |_| {}
 
-	const fileContents = std.Io.Dir.cwd().readFileAlloc(io, filePath, std.heap.page_allocator, .limited(std.math.maxInt(usize))) catch |err| switch (err) {
+	const fileContents = std.Io.Dir.cwd().readFileAlloc(io, filePath, std.heap.page_allocator, .unlimited) catch |err| switch (err) {
 		else => fatal("file reading failed: {s}", .{@errorName(err)}),
 	};
 	defer std.heap.page_allocator.free(fileContents);
