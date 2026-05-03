@@ -3,3 +3,4 @@ zig-cache
 .zig-cache
 .vscode
 zig-out.tar.gz
+zig-pkg/

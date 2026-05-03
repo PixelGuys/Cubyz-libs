@@ -9,19 +9,17 @@ const usage =
 	\\Usage: ./file_replace pattern replacement file
 ;
 
-pub fn main() !void {
-	var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-	defer arena_state.deinit();
-	const arena = arena_state.allocator();
-
-	const args = try std.process.argsAlloc(arena);
-	if(args.len != 4) {
-		try std.fs.File.stdout().writeAll(usage);
-		return std.process.cleanExit();
+pub fn main(init: std.process.Init) !void {
+	const arena = init.arena.allocator();
+	const io = init.io;
+	const args = try init.minimal.args.toSlice(arena);
+	if (args.len != 4) {
+		try std.Io.File.stdout().writeStreamingAll(io, usage);
+		return std.process.cleanExit(io);
 	}
 
 	const pattern = args[1];
-	if(pattern.len == 0) {
+	if (pattern.len == 0) {
 		fatal("pattern is empty (not allowed)", .{});
 	}
 	const replacement = args[2];
@@ -30,11 +28,11 @@ pub fn main() !void {
 	const outputFilePath = try std.mem.concat(arena, u8, &.{filePath, ".tmp"});
 	defer arena.free(outputFilePath);
 
-	if(std.fs.cwd().access(outputFilePath, .{.mode = .read_write})) |_| {
+	if (std.Io.Dir.cwd().access(io, outputFilePath, .{.read = true, .write = true})) |_| {
 		fatal("tmp output file '{s}' does already exist", .{outputFilePath});
 	} else |_| {}
 
-	const fileContents = std.fs.cwd().readFileAlloc(std.heap.page_allocator, filePath, std.math.maxInt(usize)) catch |err| switch(err) {
+	const fileContents = std.Io.Dir.cwd().readFileAlloc(io, filePath, std.heap.page_allocator, .unlimited) catch |err| switch (err) {
 		else => fatal("file reading failed: {s}", .{@errorName(err)}),
 	};
 	defer std.heap.page_allocator.free(fileContents);
@@ -44,14 +42,14 @@ pub fn main() !void {
 	defer std.heap.page_allocator.free(replacementBuffer);
 	_ = std.mem.replace(u8, fileContents, pattern, replacement, replacementBuffer);
 
-	std.fs.cwd().writeFile(.{.sub_path = outputFilePath, .data = replacementBuffer}) catch |err| {
+	std.Io.Dir.cwd().writeFile(io, .{.sub_path = outputFilePath, .data = replacementBuffer}) catch |err| {
 		fatal("file writing failed: {s}", .{@errorName(err)});
 	};
-	std.fs.cwd().rename(outputFilePath, filePath) catch |err| {
+	std.Io.Dir.cwd().rename(outputFilePath, std.Io.Dir.cwd(), filePath, io) catch |err| {
 		fatal("renaming temporary file failed: {s}", .{@errorName(err)});
 	};
 
-	return std.process.cleanExit();
+	return std.process.cleanExit(io);
 }
 
 fn fatal(comptime format: []const u8, args: anytype) noreturn {

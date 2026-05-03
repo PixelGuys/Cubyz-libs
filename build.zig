@@ -13,7 +13,7 @@ const targets: []const std.Target.Query = &.{
 };
 
 fn addPackageCSourceFiles(exe: *std.Build.Step.Compile, dep: *std.Build.Dependency, files: []const []const u8, flags: []const []const u8) void {
-	exe.addCSourceFiles(.{
+	exe.root_module.addCSourceFiles(.{
 		.root = dep.path(""),
 		.files = files,
 		.flags = flags,
@@ -221,7 +221,7 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 		"wsi.c",
 	};
 
-	var allFlags: std.ArrayList([]const u8) = .{};
+	var allFlags: std.ArrayList([]const u8) = .empty;
 	try allFlags.appendSlice(b.allocator, flags);
 	if (target.result.os.tag == .ios) {
 		try allFlags.append(b.allocator, "-DVK_USE_PLATFORM_IOS_MVK");
@@ -237,12 +237,12 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 	});
 	try allFlags.append(b.allocator, "-fno-strict-aliasing");
 
-	c_lib.addIncludePath(headers.path("include"));
-	c_lib.addIncludePath(loader.path("loader"));
+	c_lib.root_module.addIncludePath(headers.path("include"));
+	c_lib.root_module.addIncludePath(loader.path("loader"));
 
-	c_lib.addIncludePath(loader.path("loader/generated"));
+	c_lib.root_module.addIncludePath(loader.path("loader/generated"));
 	c_lib.installHeadersDirectory(headers.path("include"), "", .{});
-	c_lib.addCSourceFiles(.{
+	c_lib.root_module.addCSourceFiles(.{
 		.root = loader.path("loader"),
 		.files = &loaderSources,
 		.flags = allFlags.items,
@@ -496,7 +496,7 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 		"pass.cpp",
 	};
 
-	var allFlags: std.ArrayList([]const u8) = .{};
+	var allFlags: std.ArrayList([]const u8) = .empty;
 	try allFlags.appendSlice(b.allocator, flags);
 	switch (target.result.os.tag) {
 		.windows => {
@@ -519,31 +519,31 @@ pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []cons
 	const spirvHeaders = b.dependency("SPIRV-Headers", .{});
 	const spirvTools = glslang.builder.dependency("SPIRV-Tools", .{});
 
-	layerslib.addIncludePath(headers.path("include"));
-	layerslib.addIncludePath(utilityLibraries.path("include"));
-	layerslib.addIncludePath(spirvHeaders.path("include"));
-	layerslib.addIncludePath(spirvTools.path("include"));
-	layerslib.addIncludePath(validationLayers.path("layers"));
-	layerslib.addIncludePath(validationLayers.path("layers/vulkan"));
-	layerslib.addIncludePath(validationLayers.path("layers/external"));
+	layerslib.root_module.addIncludePath(headers.path("include"));
+	layerslib.root_module.addIncludePath(utilityLibraries.path("include"));
+	layerslib.root_module.addIncludePath(spirvHeaders.path("include"));
+	layerslib.root_module.addIncludePath(spirvTools.path("include"));
+	layerslib.root_module.addIncludePath(validationLayers.path("layers"));
+	layerslib.root_module.addIncludePath(validationLayers.path("layers/vulkan"));
+	layerslib.root_module.addIncludePath(validationLayers.path("layers/external"));
 
-	layerslib.addCSourceFiles(.{
+	layerslib.root_module.addCSourceFiles(.{
 		.root = utilityLibraries.path("src"),
 		.files = &utilitySources,
 		.flags = allFlags.items,
 	});
-	layerslib.addCSourceFiles(.{
+	layerslib.root_module.addCSourceFiles(.{
 		.root = validationLayers.path("layers"),
 		.files = &layerSources,
 		.flags = allFlags.items,
 	});
-	layerslib.addCSourceFiles(.{
+	layerslib.root_module.addCSourceFiles(.{
 		.root = validationLayers.path("layers/gpuav/spirv"),
 		.files = &gpuavSpirvSources,
 		.flags = allFlags.items,
 	});
-	layerslib.linkLibrary(glslang.artifact("SPIRV-Tools"));
-	layerslib.linkLibrary(glslang.artifact("SPIRV-Tools-opt"));
+	layerslib.root_module.linkLibrary(glslang.artifact("SPIRV-Tools"));
+	layerslib.root_module.linkLibrary(glslang.artifact("SPIRV-Tools-opt"));
 
 	const validationLayerJsonPath = validationLayers.path("layers/VkLayer_khronos_validation.json.in");
 	const jsonInstall = b.addInstallLibFile(validationLayerJsonPath, b.fmt("{s}/VkLayer_khronos_validation.json", .{name}));
@@ -566,19 +566,19 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 
 	c_lib.root_module.addCMacro("FT2_BUILD_LIBRARY", "1");
 	c_lib.root_module.addCMacro("HAVE_UNISTD_H", "1");
-	c_lib.addIncludePath(freetype.path("include"));
+	c_lib.root_module.addIncludePath(freetype.path("include"));
 	c_lib.installHeadersDirectory(freetype.path("include"), "", .{});
 	addPackageCSourceFiles(c_lib, freetype, &freetypeSources, flags);
-	if (target.result.os.tag == .macos) c_lib.addCSourceFile(.{
+	if (target.result.os.tag == .macos) c_lib.root_module.addCSourceFile(.{
 		.file = freetype.path("src/base/ftmac.c"),
 		.flags = &.{},
 	});
 
-	c_lib.addIncludePath(harfbuzz.path("src"));
+	c_lib.root_module.addIncludePath(harfbuzz.path("src"));
 	c_lib.installHeadersDirectory(harfbuzz.path("src"), "", .{});
 	c_lib.root_module.addCMacro("HAVE_FREETYPE", "1");
-	c_lib.addCSourceFile(.{.file = harfbuzz.path("src/harfbuzz.cc"), .flags = flags});
-	c_lib.linkLibCpp();
+	c_lib.root_module.addCSourceFile(.{.file = harfbuzz.path("src/harfbuzz.cc"), .flags = flags});
+	c_lib.root_module.link_libcpp = true;
 }
 
 pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) !void {
@@ -612,7 +612,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		try allFlags.append(b.allocator, "-D_GNU_SOURCE");
 	}
 
-	c_lib.addIncludePath(glfw.path("include"));
+	c_lib.root_module.addIncludePath(glfw.path("include"));
 	c_lib.installHeader(glfw.path("include/GLFW/glfw3.h"), "GLFW/glfw3.h");
 	const fileses: [3][]const []const u8 = .{
 		&.{"context.c", "init.c", "input.c", "monitor.c", "platform.c", "vulkan.c", "window.c", "egl_context.c", "osmesa_context.c", "null_init.c", "null_monitor.c", "null_window.c", "null_joystick.c"},
@@ -630,7 +630,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 	};
 
 	for (fileses) |files| {
-		c_lib.addCSourceFiles(.{
+		c_lib.root_module.addCSourceFiles(.{
 			.root = root,
 			.files = files,
 			.flags = allFlags.items,
@@ -640,7 +640,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 
 pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) void {
 	const miniaudio = b.dependency("miniaudio", .{});
-	c_lib.addIncludePath(miniaudio.path(""));
+	c_lib.root_module.addIncludePath(miniaudio.path(""));
 
 	c_lib.installHeader(miniaudio.path("extras/stb_vorbis.c"), "stb/stb_vorbis.h");
 	const miniaudioHeaderInstall = b.addInstallFile(miniaudio.path("extras/miniaudio_split/miniaudio.h"), "include/miniaudio.h");
@@ -654,43 +654,43 @@ pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	const replacementStep = patchFile(b, replace_tool, replacements, miniaudioHeaderPath, &miniaudioHeaderInstall.step);
 	c_lib.step.dependOn(replacementStep);
 
-	c_lib.addCSourceFile(.{.file = b.path("lib/miniaudio_stbvorbis.c"), .flags = flags});
+	c_lib.root_module.addCSourceFile(.{.file = b.path("lib/miniaudio_stbvorbis.c"), .flags = flags});
 }
 
 pub fn addMbedTls(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const mbedtls = b.dependency("mbedtls", .{});
 	const tfPsaCrypto = b.dependency("tf_psa_crypto", .{});
-	c_lib.addCSourceFiles(.{
+	c_lib.root_module.addCSourceFiles(.{
 		.root = mbedtls.path("library"),
 		.files = mbedTlsSources,
 		.flags = flags,
 	});
-	c_lib.addCSourceFiles(.{
+	c_lib.root_module.addCSourceFiles(.{
 		.root = tfPsaCrypto.path("core"),
 		.files = tfPsaCryptoCoreSources,
 		.flags = flags,
 	});
-	c_lib.addCSourceFiles(.{
+	c_lib.root_module.addCSourceFiles(.{
 		.root = tfPsaCrypto.path("drivers/builtin/src"),
 		.files = tfPsaCryptoDriverSources,
 		.flags = flags,
 	});
-	c_lib.addCSourceFile(.{
+	c_lib.root_module.addCSourceFile(.{
 		.file = b.path("lib/tf_psa_crypto/psa_crypto_driver_wrappers_no_static.c"), // Generated file
 		.flags = flags,
 	});
-	c_lib.addCSourceFiles(.{
+	c_lib.root_module.addCSourceFiles(.{
 		.root = b.path("lib/mbedtls"),
 		.files = &.{"error.c", "ssl_debug_helpers_generated.c", "version_features.c"}, // Generated files
 		.flags = flags,
 	});
-	c_lib.addIncludePath(b.path("lib/tf_psa_crypto")); // Contains generated files
-	c_lib.addIncludePath(b.path("lib/mbedtls")); // Contains generated files
-	c_lib.addIncludePath(tfPsaCrypto.path("core"));
-	c_lib.addIncludePath(tfPsaCrypto.path("drivers/builtin/src"));
-	c_lib.addIncludePath(tfPsaCrypto.path("include"));
-	c_lib.addIncludePath(tfPsaCrypto.path("drivers/builtin/include"));
-	c_lib.addIncludePath(mbedtls.path("include"));
+	c_lib.root_module.addIncludePath(b.path("lib/tf_psa_crypto")); // Contains generated files
+	c_lib.root_module.addIncludePath(b.path("lib/mbedtls")); // Contains generated files
+	c_lib.root_module.addIncludePath(tfPsaCrypto.path("core"));
+	c_lib.root_module.addIncludePath(tfPsaCrypto.path("drivers/builtin/src"));
+	c_lib.root_module.addIncludePath(tfPsaCrypto.path("include"));
+	c_lib.root_module.addIncludePath(tfPsaCrypto.path("drivers/builtin/include"));
+	c_lib.root_module.addIncludePath(mbedtls.path("include"));
 	c_lib.installHeadersDirectory(mbedtls.path("include"), "", .{});
 	c_lib.installHeadersDirectory(tfPsaCrypto.path("include"), "", .{});
 	c_lib.installHeadersDirectory(tfPsaCrypto.path("drivers/builtin/include"), "", .{});
@@ -699,12 +699,12 @@ pub fn addMbedTls(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const 
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 
-	c_lib.addIncludePath(cgltf.path(""));
+	c_lib.root_module.addIncludePath(cgltf.path(""));
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
 	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
 
-	c_lib.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c"}, .flags = flags});
+	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c"}, .flags = flags});
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
@@ -722,7 +722,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		c_lib.root_module.addLibraryPath(.{.cwd_relative = b.fmt("{s}/usr/lib", .{sdkPath})});
 	}
 
-	c_lib.addAfterIncludePath(b.path("include"));
+	c_lib.root_module.addAfterIncludePath(b.path("include"));
 	c_lib.installHeader(b.path("include/glad/gl.h"), "glad/gl.h");
 	c_lib.installHeader(b.path("include/KHR/khrplatform.h"), "KHR/khrplatform.h");
 
@@ -741,11 +741,11 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	}
 	try addGLFWSources(b, c_lib, target, flags);
 	addMbedTls(b, c_lib, flags);
-	c_lib.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
+	c_lib.root_module.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
 
 	// NOTE(blackedout): See the above glad comment
 	if (target.result.os.tag != .macos) {
-		c_lib.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags});
+		c_lib.root_module.addCSourceFile(.{.file = b.path("lib/vulkan.c"), .flags = flags});
 	}
 
 	const glslang = b.dependency("glslang", .{
@@ -767,24 +767,26 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	return c_lib;
 }
 
-fn runChild(step: *std.Build.Step, argv: []const []const u8) !void {
+fn runChild(step: *std.Build.Step, io: std.Io, argv: []const []const u8) !void {
 	const allocator = step.owner.allocator;
-	const result = try std.process.Child.run(.{.allocator = allocator, .argv = argv});
-	try std.fs.File.stdout().writeAll(result.stdout);
-	try std.fs.File.stderr().writeAll(result.stderr);
+	const result = try std.process.run(allocator, io, .{.argv = argv});
+	try std.Io.File.stdout().writeStreamingAll(io, result.stdout);
+	try std.Io.File.stderr().writeStreamingAll(io, result.stderr);
 	allocator.free(result.stdout);
 	allocator.free(result.stderr);
 }
 
-fn packageFunction(step: *std.Build.Step, _: std.Build.Step.MakeOptions) anyerror!void {
+fn packageFunction(step: *std.Build.Step, options: std.Build.Step.MakeOptions) anyerror!void {
 	const base: []const []const u8 = &.{"tar", "-czf"};
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib", "zig-out/lib/cubyz_deps_x86_64-windows-gnu"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib", "zig-out/lib/cubyz_deps_aarch64-windows-gnu"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a", "zig-out/lib/cubyz_deps_x86_64-linux-musl"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a", "zig-out/lib/cubyz_deps_aarch64-linux-musl"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a", "zig-out/lib/cubyz_deps_x86_64-macos-none"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a", "zig-out/lib/cubyz_deps_aarch64-macos-none"});
-	try runChild(step, base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
+	var io = std.Io.Threaded.init(options.gpa, .{});
+	defer io.deinit();
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_x86_64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_x86_64-windows-gnu.lib", "zig-out/lib/cubyz_deps_x86_64-windows-gnu"});
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_aarch64-windows-gnu.tar.gz", "zig-out/lib/cubyz_deps_aarch64-windows-gnu.lib", "zig-out/lib/cubyz_deps_aarch64-windows-gnu"});
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_x86_64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-linux-musl.a", "zig-out/lib/cubyz_deps_x86_64-linux-musl"});
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_aarch64-linux-musl.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-linux-musl.a", "zig-out/lib/cubyz_deps_aarch64-linux-musl"});
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_x86_64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_x86_64-macos-none.a", "zig-out/lib/cubyz_deps_x86_64-macos-none"});
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_aarch64-macos-none.tar.gz", "zig-out/lib/libcubyz_deps_aarch64-macos-none.a", "zig-out/lib/cubyz_deps_aarch64-macos-none"});
+	try runChild(step, io.io(), base ++ .{"zig-out/cubyz_deps_headers.tar.gz", "zig-out/include"});
 }
 
 pub fn build(b: *std.Build) !void {
