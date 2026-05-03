@@ -698,11 +698,13 @@ pub fn addMbedTls(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const 
 
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
+	const stbImage = b.dependency("stb_image", .{});
 
 	c_lib.root_module.addIncludePath(cgltf.path(""));
+	c_lib.root_module.addIncludePath(stbImage.path(""));
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
-	c_lib.installHeader(b.path("include/stb/stb_image_write.h"), "stb/stb_image_write.h");
-	c_lib.installHeader(b.path("include/stb/stb_image.h"), "stb/stb_image.h");
+	c_lib.installHeader(stbImage.path("stb_image_write.h"), "stb/stb_image_write.h");
+	c_lib.installHeader(stbImage.path("stb_image.h"), "stb/stb_image.h");
 
 	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c"}, .flags = flags});
 }
