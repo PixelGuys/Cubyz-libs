@@ -706,7 +706,7 @@ pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.installHeader(stb.path("stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(stb.path("stb_image.h"), "stb/stb_image.h");
 
-	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb_image.c", "lib/stb_image_write.c"}, .flags = flags});
+	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb.c"}, .flags = flags});
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
