@@ -21,28 +21,28 @@
 			.hash = "glslang-1.0.1+1.4.309-eMn68GHJCQDNzeSpilELiLfzDAVrjQGkGryaCcCzFTFY",
 		},
 		.@"Vulkan-Headers" = .{
-			.url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.330.tar.gz",
-			.hash = "N-V-__8AAFXYAQKsK51AAGXB9HziPDFjS_DVUq6_QHVxHrBM",
+			.url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AAPnEbQK6L3hGtJefy0xZjeg7KOxIEj8_obZC2_lF",
 		},
 		.@"Vulkan-Loader" = .{
-			.url = "https://github.com/KhronosGroup/Vulkan-Loader/archive/refs/tags/v1.4.330.tar.gz",
-			.hash = "N-V-__8AAGYqgADJ4CSWkkwZd12lq-o6Y9ByBpscPmS_tpH4",
+			.url = "https://github.com/KhronosGroup/Vulkan-Loader/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AAJT_kQD6CFBMUVgvy7My2RpKDIGBj0RasjO4C2io",
 		},
 		.@"MoltenVK-macos" = .{
-			.url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.0/MoltenVK-macos.tar",
-			.hash = "N-V-__8AAO62gwMuCOpZesC2YsUnsRFbbzsCigpvKBUl8QwB",
+			.url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.1/MoltenVK-macos.tar",
+			.hash = "N-V-__8AACUMVgOPCw3yl1KPWIkLS6xEGBjWnZgoMvNigQmj",
 		},
 		.@"Vulkan-Utility-Libraries" = .{
-			.url = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/v1.4.330.tar.gz",
-			.hash = "N-V-__8AAPKLeADUZQZzoYbObh2HUYR9pBncy2MDKFCCqtXz",
+			.url = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AAFvqggAtCu4-YMTGMhyZ-NAPaihjpO5B6NxwMijB",
 		},
 		.@"SPIRV-Headers" = .{
-			.url = "https://github.com/KhronosGroup/SPIRV-Headers/archive/6bb105b6c4b3a246e1e6bb96366fe14c6dbfde83.tar.gz",
-			.hash = "N-V-__8AAP75OgDs2RQmQLAddfjvhD4RXblO1kSMg0ZvpCC1",
+			.url = "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/vulkan-sdk-1.4.350.0.tar.gz",
+			.hash = "N-V-__8AAOWAPQDTQrudoJ1kyAzjkh3mLopx0pq3uHSy2LDi",
 		},
 		.@"Vulkan-ValidationLayers" = .{
-			.url = "https://github.com/KhronosGroup/Vulkan-ValidationLayers/archive/refs/tags/v1.4.330.tar.gz",
-			.hash = "N-V-__8AAHvZ7QLIOvinD_aUpUBYF-rgwHYY6ZQXNHcltRfd",
+			.url = "https://github.com/KhronosGroup/Vulkan-ValidationLayers/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AABB5aAPxBKdAVDq8fJjAj_2gMEMzcgtrlOKSu-Ab",
 		},
 		.cgltf = .{
 			.url = "https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz",
