@@ -696,6 +696,14 @@ pub fn addMbedTls(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const 
 	c_lib.installHeadersDirectory(tfPsaCrypto.path("drivers/builtin/include"), "", .{});
 }
 
+pub fn addFileDialog(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
+	const tinyfiledialogs = b.dependency("tinyfiledialogs", .{});
+	c_lib.root_module.addIncludePath(tinyfiledialogs.path("."));
+	c_lib.installHeader(tinyfiledialogs.path("tinyfiledialogs.h"), "tinyfiledialogs.h");
+
+	c_lib.root_module.addCSourceFile(.{.file = tinyfiledialogs.path("tinyfiledialogs.c"), .flags = flags});
+}
+
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 	const stb = b.dependency("stb", .{});
@@ -743,6 +751,7 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	}
 	try addGLFWSources(b, c_lib, target, flags);
 	addMbedTls(b, c_lib, flags);
+	addFileDialog(b, c_lib, flags);
 	c_lib.root_module.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
 
 	// NOTE(blackedout): See the above glad comment

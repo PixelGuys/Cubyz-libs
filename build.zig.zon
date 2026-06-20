@@ -64,5 +64,9 @@
 			.url = "https://github.com/nothings/stb/archive/31c1ad37456438565541f4919958214b6e762fb4.tar.gz",
 			.hash = "N-V-__8AAN1DTgAKvlSQnjJwSg4ZY2JP5OHmzKOcA4BewA4Y",
 		},
+		.tinyfiledialogs = .{
+			.url = "git+https://git.code.sf.net/p/tinyfiledialogs/code#eaea99294f266149104e67e3f4e29db6ea03a1eb",
+			.hash = "N-V-__8AADsZFAC9Ut0V_OXjd_w2LO5zM1W1N5FP9W1bJ_m4",
+		},
 	},
 }
