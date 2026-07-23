@@ -267,11 +267,15 @@ pub fn addVulkanApple(b: *std.Build, step: *std.Build.Step, c_lib: *std.Build.St
 }
 
 pub fn makeVulkanLayers(b: *std.Build, parentStep: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !void {
-	const layerslib = b.addLibrary(.{.name = "VkLayer_khronos_validation", .root_module = b.createModule(.{
-		.target = target,
-		.optimize = optimize,
-		.pic = true, // Needed for thread sanitizer
-	}), .linkage = .dynamic});
+	const layerslib = b.addLibrary(.{
+		.name = "VkLayer_khronos_validation",
+		.root_module = b.createModule(.{
+			.target = target,
+			.optimize = optimize,
+			.pic = true, // Needed for thread sanitizer
+		}),
+		.linkage = .dynamic,
+	});
 
 	const headers = b.dependency("Vulkan-Headers", .{});
 	const validationLayers = b.dependency("Vulkan-ValidationLayers", .{});
@@ -754,11 +758,14 @@ pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
-	const c_lib = b.addLibrary(.{.name = name, .root_module = b.createModule(.{
-		.target = target,
-		.optimize = optimize,
-		.pic = true, // Needed for thread sanitizer
-	})});
+	const c_lib = b.addLibrary(.{
+		.name = name,
+		.root_module = b.createModule(.{
+			.target = target,
+			.optimize = optimize,
+			.pic = true, // Needed for thread sanitizer
+		}),
+	});
 
 	// NOTE(blackedout): To cross compile on macOS to macOS, the SDK has to be set correctly
 	if (builtin.os.tag == .macos and target.result.os.tag == .macos) {
