@@ -24,6 +24,9 @@ extern "C" {
 
 
 int GLAD_VK_VERSION_1_0 = 0;
+int GLAD_VK_VERSION_1_1 = 0;
+int GLAD_VK_VERSION_1_2 = 0;
+int GLAD_VK_VERSION_1_3 = 0;
 int GLAD_VK_KHR_surface = 0;
 int GLAD_VK_KHR_swapchain = 0;
 
@@ -36,57 +39,95 @@ PFN_vkAllocateDescriptorSets glad_vkAllocateDescriptorSets = NULL;
 PFN_vkAllocateMemory glad_vkAllocateMemory = NULL;
 PFN_vkBeginCommandBuffer glad_vkBeginCommandBuffer = NULL;
 PFN_vkBindBufferMemory glad_vkBindBufferMemory = NULL;
+PFN_vkBindBufferMemory2 glad_vkBindBufferMemory2 = NULL;
 PFN_vkBindImageMemory glad_vkBindImageMemory = NULL;
+PFN_vkBindImageMemory2 glad_vkBindImageMemory2 = NULL;
 PFN_vkCmdBeginQuery glad_vkCmdBeginQuery = NULL;
 PFN_vkCmdBeginRenderPass glad_vkCmdBeginRenderPass = NULL;
+PFN_vkCmdBeginRenderPass2 glad_vkCmdBeginRenderPass2 = NULL;
+PFN_vkCmdBeginRendering glad_vkCmdBeginRendering = NULL;
 PFN_vkCmdBindDescriptorSets glad_vkCmdBindDescriptorSets = NULL;
 PFN_vkCmdBindIndexBuffer glad_vkCmdBindIndexBuffer = NULL;
 PFN_vkCmdBindPipeline glad_vkCmdBindPipeline = NULL;
 PFN_vkCmdBindVertexBuffers glad_vkCmdBindVertexBuffers = NULL;
+PFN_vkCmdBindVertexBuffers2 glad_vkCmdBindVertexBuffers2 = NULL;
 PFN_vkCmdBlitImage glad_vkCmdBlitImage = NULL;
+PFN_vkCmdBlitImage2 glad_vkCmdBlitImage2 = NULL;
 PFN_vkCmdClearAttachments glad_vkCmdClearAttachments = NULL;
 PFN_vkCmdClearColorImage glad_vkCmdClearColorImage = NULL;
 PFN_vkCmdClearDepthStencilImage glad_vkCmdClearDepthStencilImage = NULL;
 PFN_vkCmdCopyBuffer glad_vkCmdCopyBuffer = NULL;
+PFN_vkCmdCopyBuffer2 glad_vkCmdCopyBuffer2 = NULL;
 PFN_vkCmdCopyBufferToImage glad_vkCmdCopyBufferToImage = NULL;
+PFN_vkCmdCopyBufferToImage2 glad_vkCmdCopyBufferToImage2 = NULL;
 PFN_vkCmdCopyImage glad_vkCmdCopyImage = NULL;
+PFN_vkCmdCopyImage2 glad_vkCmdCopyImage2 = NULL;
 PFN_vkCmdCopyImageToBuffer glad_vkCmdCopyImageToBuffer = NULL;
+PFN_vkCmdCopyImageToBuffer2 glad_vkCmdCopyImageToBuffer2 = NULL;
 PFN_vkCmdCopyQueryPoolResults glad_vkCmdCopyQueryPoolResults = NULL;
 PFN_vkCmdDispatch glad_vkCmdDispatch = NULL;
+PFN_vkCmdDispatchBase glad_vkCmdDispatchBase = NULL;
 PFN_vkCmdDispatchIndirect glad_vkCmdDispatchIndirect = NULL;
 PFN_vkCmdDraw glad_vkCmdDraw = NULL;
 PFN_vkCmdDrawIndexed glad_vkCmdDrawIndexed = NULL;
 PFN_vkCmdDrawIndexedIndirect glad_vkCmdDrawIndexedIndirect = NULL;
+PFN_vkCmdDrawIndexedIndirectCount glad_vkCmdDrawIndexedIndirectCount = NULL;
 PFN_vkCmdDrawIndirect glad_vkCmdDrawIndirect = NULL;
+PFN_vkCmdDrawIndirectCount glad_vkCmdDrawIndirectCount = NULL;
 PFN_vkCmdEndQuery glad_vkCmdEndQuery = NULL;
 PFN_vkCmdEndRenderPass glad_vkCmdEndRenderPass = NULL;
+PFN_vkCmdEndRenderPass2 glad_vkCmdEndRenderPass2 = NULL;
+PFN_vkCmdEndRendering glad_vkCmdEndRendering = NULL;
 PFN_vkCmdExecuteCommands glad_vkCmdExecuteCommands = NULL;
 PFN_vkCmdFillBuffer glad_vkCmdFillBuffer = NULL;
 PFN_vkCmdNextSubpass glad_vkCmdNextSubpass = NULL;
+PFN_vkCmdNextSubpass2 glad_vkCmdNextSubpass2 = NULL;
 PFN_vkCmdPipelineBarrier glad_vkCmdPipelineBarrier = NULL;
+PFN_vkCmdPipelineBarrier2 glad_vkCmdPipelineBarrier2 = NULL;
 PFN_vkCmdPushConstants glad_vkCmdPushConstants = NULL;
 PFN_vkCmdResetEvent glad_vkCmdResetEvent = NULL;
+PFN_vkCmdResetEvent2 glad_vkCmdResetEvent2 = NULL;
 PFN_vkCmdResetQueryPool glad_vkCmdResetQueryPool = NULL;
 PFN_vkCmdResolveImage glad_vkCmdResolveImage = NULL;
+PFN_vkCmdResolveImage2 glad_vkCmdResolveImage2 = NULL;
 PFN_vkCmdSetBlendConstants glad_vkCmdSetBlendConstants = NULL;
+PFN_vkCmdSetCullMode glad_vkCmdSetCullMode = NULL;
 PFN_vkCmdSetDepthBias glad_vkCmdSetDepthBias = NULL;
+PFN_vkCmdSetDepthBiasEnable glad_vkCmdSetDepthBiasEnable = NULL;
 PFN_vkCmdSetDepthBounds glad_vkCmdSetDepthBounds = NULL;
+PFN_vkCmdSetDepthBoundsTestEnable glad_vkCmdSetDepthBoundsTestEnable = NULL;
+PFN_vkCmdSetDepthCompareOp glad_vkCmdSetDepthCompareOp = NULL;
+PFN_vkCmdSetDepthTestEnable glad_vkCmdSetDepthTestEnable = NULL;
+PFN_vkCmdSetDepthWriteEnable glad_vkCmdSetDepthWriteEnable = NULL;
+PFN_vkCmdSetDeviceMask glad_vkCmdSetDeviceMask = NULL;
 PFN_vkCmdSetEvent glad_vkCmdSetEvent = NULL;
+PFN_vkCmdSetEvent2 glad_vkCmdSetEvent2 = NULL;
+PFN_vkCmdSetFrontFace glad_vkCmdSetFrontFace = NULL;
 PFN_vkCmdSetLineWidth glad_vkCmdSetLineWidth = NULL;
+PFN_vkCmdSetPrimitiveRestartEnable glad_vkCmdSetPrimitiveRestartEnable = NULL;
+PFN_vkCmdSetPrimitiveTopology glad_vkCmdSetPrimitiveTopology = NULL;
+PFN_vkCmdSetRasterizerDiscardEnable glad_vkCmdSetRasterizerDiscardEnable = NULL;
 PFN_vkCmdSetScissor glad_vkCmdSetScissor = NULL;
+PFN_vkCmdSetScissorWithCount glad_vkCmdSetScissorWithCount = NULL;
 PFN_vkCmdSetStencilCompareMask glad_vkCmdSetStencilCompareMask = NULL;
+PFN_vkCmdSetStencilOp glad_vkCmdSetStencilOp = NULL;
 PFN_vkCmdSetStencilReference glad_vkCmdSetStencilReference = NULL;
+PFN_vkCmdSetStencilTestEnable glad_vkCmdSetStencilTestEnable = NULL;
 PFN_vkCmdSetStencilWriteMask glad_vkCmdSetStencilWriteMask = NULL;
 PFN_vkCmdSetViewport glad_vkCmdSetViewport = NULL;
+PFN_vkCmdSetViewportWithCount glad_vkCmdSetViewportWithCount = NULL;
 PFN_vkCmdUpdateBuffer glad_vkCmdUpdateBuffer = NULL;
 PFN_vkCmdWaitEvents glad_vkCmdWaitEvents = NULL;
+PFN_vkCmdWaitEvents2 glad_vkCmdWaitEvents2 = NULL;
 PFN_vkCmdWriteTimestamp glad_vkCmdWriteTimestamp = NULL;
+PFN_vkCmdWriteTimestamp2 glad_vkCmdWriteTimestamp2 = NULL;
 PFN_vkCreateBuffer glad_vkCreateBuffer = NULL;
 PFN_vkCreateBufferView glad_vkCreateBufferView = NULL;
 PFN_vkCreateCommandPool glad_vkCreateCommandPool = NULL;
 PFN_vkCreateComputePipelines glad_vkCreateComputePipelines = NULL;
 PFN_vkCreateDescriptorPool glad_vkCreateDescriptorPool = NULL;
 PFN_vkCreateDescriptorSetLayout glad_vkCreateDescriptorSetLayout = NULL;
+PFN_vkCreateDescriptorUpdateTemplate glad_vkCreateDescriptorUpdateTemplate = NULL;
 PFN_vkCreateDevice glad_vkCreateDevice = NULL;
 PFN_vkCreateEvent glad_vkCreateEvent = NULL;
 PFN_vkCreateFence glad_vkCreateFence = NULL;
@@ -97,9 +138,12 @@ PFN_vkCreateImageView glad_vkCreateImageView = NULL;
 PFN_vkCreateInstance glad_vkCreateInstance = NULL;
 PFN_vkCreatePipelineCache glad_vkCreatePipelineCache = NULL;
 PFN_vkCreatePipelineLayout glad_vkCreatePipelineLayout = NULL;
+PFN_vkCreatePrivateDataSlot glad_vkCreatePrivateDataSlot = NULL;
 PFN_vkCreateQueryPool glad_vkCreateQueryPool = NULL;
 PFN_vkCreateRenderPass glad_vkCreateRenderPass = NULL;
+PFN_vkCreateRenderPass2 glad_vkCreateRenderPass2 = NULL;
 PFN_vkCreateSampler glad_vkCreateSampler = NULL;
+PFN_vkCreateSamplerYcbcrConversion glad_vkCreateSamplerYcbcrConversion = NULL;
 PFN_vkCreateSemaphore glad_vkCreateSemaphore = NULL;
 PFN_vkCreateShaderModule glad_vkCreateShaderModule = NULL;
 PFN_vkCreateSwapchainKHR glad_vkCreateSwapchainKHR = NULL;
@@ -108,6 +152,7 @@ PFN_vkDestroyBufferView glad_vkDestroyBufferView = NULL;
 PFN_vkDestroyCommandPool glad_vkDestroyCommandPool = NULL;
 PFN_vkDestroyDescriptorPool glad_vkDestroyDescriptorPool = NULL;
 PFN_vkDestroyDescriptorSetLayout glad_vkDestroyDescriptorSetLayout = NULL;
+PFN_vkDestroyDescriptorUpdateTemplate glad_vkDestroyDescriptorUpdateTemplate = NULL;
 PFN_vkDestroyDevice glad_vkDestroyDevice = NULL;
 PFN_vkDestroyEvent glad_vkDestroyEvent = NULL;
 PFN_vkDestroyFence glad_vkDestroyFence = NULL;
@@ -118,9 +163,11 @@ PFN_vkDestroyInstance glad_vkDestroyInstance = NULL;
 PFN_vkDestroyPipeline glad_vkDestroyPipeline = NULL;
 PFN_vkDestroyPipelineCache glad_vkDestroyPipelineCache = NULL;
 PFN_vkDestroyPipelineLayout glad_vkDestroyPipelineLayout = NULL;
+PFN_vkDestroyPrivateDataSlot glad_vkDestroyPrivateDataSlot = NULL;
 PFN_vkDestroyQueryPool glad_vkDestroyQueryPool = NULL;
 PFN_vkDestroyRenderPass glad_vkDestroyRenderPass = NULL;
 PFN_vkDestroySampler glad_vkDestroySampler = NULL;
+PFN_vkDestroySamplerYcbcrConversion glad_vkDestroySamplerYcbcrConversion = NULL;
 PFN_vkDestroySemaphore glad_vkDestroySemaphore = NULL;
 PFN_vkDestroyShaderModule glad_vkDestroyShaderModule = NULL;
 PFN_vkDestroySurfaceKHR glad_vkDestroySurfaceKHR = NULL;
@@ -131,38 +178,65 @@ PFN_vkEnumerateDeviceExtensionProperties glad_vkEnumerateDeviceExtensionProperti
 PFN_vkEnumerateDeviceLayerProperties glad_vkEnumerateDeviceLayerProperties = NULL;
 PFN_vkEnumerateInstanceExtensionProperties glad_vkEnumerateInstanceExtensionProperties = NULL;
 PFN_vkEnumerateInstanceLayerProperties glad_vkEnumerateInstanceLayerProperties = NULL;
+PFN_vkEnumerateInstanceVersion glad_vkEnumerateInstanceVersion = NULL;
+PFN_vkEnumeratePhysicalDeviceGroups glad_vkEnumeratePhysicalDeviceGroups = NULL;
 PFN_vkEnumeratePhysicalDevices glad_vkEnumeratePhysicalDevices = NULL;
 PFN_vkFlushMappedMemoryRanges glad_vkFlushMappedMemoryRanges = NULL;
 PFN_vkFreeCommandBuffers glad_vkFreeCommandBuffers = NULL;
 PFN_vkFreeDescriptorSets glad_vkFreeDescriptorSets = NULL;
 PFN_vkFreeMemory glad_vkFreeMemory = NULL;
+PFN_vkGetBufferDeviceAddress glad_vkGetBufferDeviceAddress = NULL;
 PFN_vkGetBufferMemoryRequirements glad_vkGetBufferMemoryRequirements = NULL;
+PFN_vkGetBufferMemoryRequirements2 glad_vkGetBufferMemoryRequirements2 = NULL;
+PFN_vkGetBufferOpaqueCaptureAddress glad_vkGetBufferOpaqueCaptureAddress = NULL;
+PFN_vkGetDescriptorSetLayoutSupport glad_vkGetDescriptorSetLayoutSupport = NULL;
+PFN_vkGetDeviceBufferMemoryRequirements glad_vkGetDeviceBufferMemoryRequirements = NULL;
+PFN_vkGetDeviceGroupPeerMemoryFeatures glad_vkGetDeviceGroupPeerMemoryFeatures = NULL;
 PFN_vkGetDeviceGroupPresentCapabilitiesKHR glad_vkGetDeviceGroupPresentCapabilitiesKHR = NULL;
 PFN_vkGetDeviceGroupSurfacePresentModesKHR glad_vkGetDeviceGroupSurfacePresentModesKHR = NULL;
+PFN_vkGetDeviceImageMemoryRequirements glad_vkGetDeviceImageMemoryRequirements = NULL;
+PFN_vkGetDeviceImageSparseMemoryRequirements glad_vkGetDeviceImageSparseMemoryRequirements = NULL;
 PFN_vkGetDeviceMemoryCommitment glad_vkGetDeviceMemoryCommitment = NULL;
+PFN_vkGetDeviceMemoryOpaqueCaptureAddress glad_vkGetDeviceMemoryOpaqueCaptureAddress = NULL;
 PFN_vkGetDeviceProcAddr glad_vkGetDeviceProcAddr = NULL;
 PFN_vkGetDeviceQueue glad_vkGetDeviceQueue = NULL;
+PFN_vkGetDeviceQueue2 glad_vkGetDeviceQueue2 = NULL;
 PFN_vkGetEventStatus glad_vkGetEventStatus = NULL;
 PFN_vkGetFenceStatus glad_vkGetFenceStatus = NULL;
 PFN_vkGetImageMemoryRequirements glad_vkGetImageMemoryRequirements = NULL;
+PFN_vkGetImageMemoryRequirements2 glad_vkGetImageMemoryRequirements2 = NULL;
 PFN_vkGetImageSparseMemoryRequirements glad_vkGetImageSparseMemoryRequirements = NULL;
+PFN_vkGetImageSparseMemoryRequirements2 glad_vkGetImageSparseMemoryRequirements2 = NULL;
 PFN_vkGetImageSubresourceLayout glad_vkGetImageSubresourceLayout = NULL;
 PFN_vkGetInstanceProcAddr glad_vkGetInstanceProcAddr = NULL;
+PFN_vkGetPhysicalDeviceExternalBufferProperties glad_vkGetPhysicalDeviceExternalBufferProperties = NULL;
+PFN_vkGetPhysicalDeviceExternalFenceProperties glad_vkGetPhysicalDeviceExternalFenceProperties = NULL;
+PFN_vkGetPhysicalDeviceExternalSemaphoreProperties glad_vkGetPhysicalDeviceExternalSemaphoreProperties = NULL;
 PFN_vkGetPhysicalDeviceFeatures glad_vkGetPhysicalDeviceFeatures = NULL;
+PFN_vkGetPhysicalDeviceFeatures2 glad_vkGetPhysicalDeviceFeatures2 = NULL;
 PFN_vkGetPhysicalDeviceFormatProperties glad_vkGetPhysicalDeviceFormatProperties = NULL;
+PFN_vkGetPhysicalDeviceFormatProperties2 glad_vkGetPhysicalDeviceFormatProperties2 = NULL;
 PFN_vkGetPhysicalDeviceImageFormatProperties glad_vkGetPhysicalDeviceImageFormatProperties = NULL;
+PFN_vkGetPhysicalDeviceImageFormatProperties2 glad_vkGetPhysicalDeviceImageFormatProperties2 = NULL;
 PFN_vkGetPhysicalDeviceMemoryProperties glad_vkGetPhysicalDeviceMemoryProperties = NULL;
+PFN_vkGetPhysicalDeviceMemoryProperties2 glad_vkGetPhysicalDeviceMemoryProperties2 = NULL;
 PFN_vkGetPhysicalDevicePresentRectanglesKHR glad_vkGetPhysicalDevicePresentRectanglesKHR = NULL;
 PFN_vkGetPhysicalDeviceProperties glad_vkGetPhysicalDeviceProperties = NULL;
+PFN_vkGetPhysicalDeviceProperties2 glad_vkGetPhysicalDeviceProperties2 = NULL;
 PFN_vkGetPhysicalDeviceQueueFamilyProperties glad_vkGetPhysicalDeviceQueueFamilyProperties = NULL;
+PFN_vkGetPhysicalDeviceQueueFamilyProperties2 glad_vkGetPhysicalDeviceQueueFamilyProperties2 = NULL;
 PFN_vkGetPhysicalDeviceSparseImageFormatProperties glad_vkGetPhysicalDeviceSparseImageFormatProperties = NULL;
+PFN_vkGetPhysicalDeviceSparseImageFormatProperties2 glad_vkGetPhysicalDeviceSparseImageFormatProperties2 = NULL;
 PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR glad_vkGetPhysicalDeviceSurfaceCapabilitiesKHR = NULL;
 PFN_vkGetPhysicalDeviceSurfaceFormatsKHR glad_vkGetPhysicalDeviceSurfaceFormatsKHR = NULL;
 PFN_vkGetPhysicalDeviceSurfacePresentModesKHR glad_vkGetPhysicalDeviceSurfacePresentModesKHR = NULL;
 PFN_vkGetPhysicalDeviceSurfaceSupportKHR glad_vkGetPhysicalDeviceSurfaceSupportKHR = NULL;
+PFN_vkGetPhysicalDeviceToolProperties glad_vkGetPhysicalDeviceToolProperties = NULL;
 PFN_vkGetPipelineCacheData glad_vkGetPipelineCacheData = NULL;
+PFN_vkGetPrivateData glad_vkGetPrivateData = NULL;
 PFN_vkGetQueryPoolResults glad_vkGetQueryPoolResults = NULL;
 PFN_vkGetRenderAreaGranularity glad_vkGetRenderAreaGranularity = NULL;
+PFN_vkGetSemaphoreCounterValue glad_vkGetSemaphoreCounterValue = NULL;
 PFN_vkGetSwapchainImagesKHR glad_vkGetSwapchainImagesKHR = NULL;
 PFN_vkInvalidateMappedMemoryRanges glad_vkInvalidateMappedMemoryRanges = NULL;
 PFN_vkMapMemory glad_vkMapMemory = NULL;
@@ -170,16 +244,23 @@ PFN_vkMergePipelineCaches glad_vkMergePipelineCaches = NULL;
 PFN_vkQueueBindSparse glad_vkQueueBindSparse = NULL;
 PFN_vkQueuePresentKHR glad_vkQueuePresentKHR = NULL;
 PFN_vkQueueSubmit glad_vkQueueSubmit = NULL;
+PFN_vkQueueSubmit2 glad_vkQueueSubmit2 = NULL;
 PFN_vkQueueWaitIdle glad_vkQueueWaitIdle = NULL;
 PFN_vkResetCommandBuffer glad_vkResetCommandBuffer = NULL;
 PFN_vkResetCommandPool glad_vkResetCommandPool = NULL;
 PFN_vkResetDescriptorPool glad_vkResetDescriptorPool = NULL;
 PFN_vkResetEvent glad_vkResetEvent = NULL;
 PFN_vkResetFences glad_vkResetFences = NULL;
+PFN_vkResetQueryPool glad_vkResetQueryPool = NULL;
 PFN_vkSetEvent glad_vkSetEvent = NULL;
+PFN_vkSetPrivateData glad_vkSetPrivateData = NULL;
+PFN_vkSignalSemaphore glad_vkSignalSemaphore = NULL;
+PFN_vkTrimCommandPool glad_vkTrimCommandPool = NULL;
 PFN_vkUnmapMemory glad_vkUnmapMemory = NULL;
+PFN_vkUpdateDescriptorSetWithTemplate glad_vkUpdateDescriptorSetWithTemplate = NULL;
 PFN_vkUpdateDescriptorSets glad_vkUpdateDescriptorSets = NULL;
 PFN_vkWaitForFences glad_vkWaitForFences = NULL;
+PFN_vkWaitSemaphores glad_vkWaitSemaphores = NULL;
 
 
 static void glad_vk_load_VK_VERSION_1_0( GLADuserptrloadfunc load, void* userptr) {
@@ -321,6 +402,93 @@ static void glad_vk_load_VK_VERSION_1_0( GLADuserptrloadfunc load, void* userptr
     glad_vkUnmapMemory = (PFN_vkUnmapMemory) load(userptr, "vkUnmapMemory");
     glad_vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets) load(userptr, "vkUpdateDescriptorSets");
     glad_vkWaitForFences = (PFN_vkWaitForFences) load(userptr, "vkWaitForFences");
+}
+static void glad_vk_load_VK_VERSION_1_1( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_VERSION_1_1) return;
+    glad_vkBindBufferMemory2 = (PFN_vkBindBufferMemory2) load(userptr, "vkBindBufferMemory2");
+    glad_vkBindImageMemory2 = (PFN_vkBindImageMemory2) load(userptr, "vkBindImageMemory2");
+    glad_vkCmdDispatchBase = (PFN_vkCmdDispatchBase) load(userptr, "vkCmdDispatchBase");
+    glad_vkCmdSetDeviceMask = (PFN_vkCmdSetDeviceMask) load(userptr, "vkCmdSetDeviceMask");
+    glad_vkCreateDescriptorUpdateTemplate = (PFN_vkCreateDescriptorUpdateTemplate) load(userptr, "vkCreateDescriptorUpdateTemplate");
+    glad_vkCreateSamplerYcbcrConversion = (PFN_vkCreateSamplerYcbcrConversion) load(userptr, "vkCreateSamplerYcbcrConversion");
+    glad_vkDestroyDescriptorUpdateTemplate = (PFN_vkDestroyDescriptorUpdateTemplate) load(userptr, "vkDestroyDescriptorUpdateTemplate");
+    glad_vkDestroySamplerYcbcrConversion = (PFN_vkDestroySamplerYcbcrConversion) load(userptr, "vkDestroySamplerYcbcrConversion");
+    glad_vkEnumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion) load(userptr, "vkEnumerateInstanceVersion");
+    glad_vkEnumeratePhysicalDeviceGroups = (PFN_vkEnumeratePhysicalDeviceGroups) load(userptr, "vkEnumeratePhysicalDeviceGroups");
+    glad_vkGetBufferMemoryRequirements2 = (PFN_vkGetBufferMemoryRequirements2) load(userptr, "vkGetBufferMemoryRequirements2");
+    glad_vkGetDescriptorSetLayoutSupport = (PFN_vkGetDescriptorSetLayoutSupport) load(userptr, "vkGetDescriptorSetLayoutSupport");
+    glad_vkGetDeviceGroupPeerMemoryFeatures = (PFN_vkGetDeviceGroupPeerMemoryFeatures) load(userptr, "vkGetDeviceGroupPeerMemoryFeatures");
+    glad_vkGetDeviceQueue2 = (PFN_vkGetDeviceQueue2) load(userptr, "vkGetDeviceQueue2");
+    glad_vkGetImageMemoryRequirements2 = (PFN_vkGetImageMemoryRequirements2) load(userptr, "vkGetImageMemoryRequirements2");
+    glad_vkGetImageSparseMemoryRequirements2 = (PFN_vkGetImageSparseMemoryRequirements2) load(userptr, "vkGetImageSparseMemoryRequirements2");
+    glad_vkGetPhysicalDeviceExternalBufferProperties = (PFN_vkGetPhysicalDeviceExternalBufferProperties) load(userptr, "vkGetPhysicalDeviceExternalBufferProperties");
+    glad_vkGetPhysicalDeviceExternalFenceProperties = (PFN_vkGetPhysicalDeviceExternalFenceProperties) load(userptr, "vkGetPhysicalDeviceExternalFenceProperties");
+    glad_vkGetPhysicalDeviceExternalSemaphoreProperties = (PFN_vkGetPhysicalDeviceExternalSemaphoreProperties) load(userptr, "vkGetPhysicalDeviceExternalSemaphoreProperties");
+    glad_vkGetPhysicalDeviceFeatures2 = (PFN_vkGetPhysicalDeviceFeatures2) load(userptr, "vkGetPhysicalDeviceFeatures2");
+    glad_vkGetPhysicalDeviceFormatProperties2 = (PFN_vkGetPhysicalDeviceFormatProperties2) load(userptr, "vkGetPhysicalDeviceFormatProperties2");
+    glad_vkGetPhysicalDeviceImageFormatProperties2 = (PFN_vkGetPhysicalDeviceImageFormatProperties2) load(userptr, "vkGetPhysicalDeviceImageFormatProperties2");
+    glad_vkGetPhysicalDeviceMemoryProperties2 = (PFN_vkGetPhysicalDeviceMemoryProperties2) load(userptr, "vkGetPhysicalDeviceMemoryProperties2");
+    glad_vkGetPhysicalDeviceProperties2 = (PFN_vkGetPhysicalDeviceProperties2) load(userptr, "vkGetPhysicalDeviceProperties2");
+    glad_vkGetPhysicalDeviceQueueFamilyProperties2 = (PFN_vkGetPhysicalDeviceQueueFamilyProperties2) load(userptr, "vkGetPhysicalDeviceQueueFamilyProperties2");
+    glad_vkGetPhysicalDeviceSparseImageFormatProperties2 = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties2) load(userptr, "vkGetPhysicalDeviceSparseImageFormatProperties2");
+    glad_vkTrimCommandPool = (PFN_vkTrimCommandPool) load(userptr, "vkTrimCommandPool");
+    glad_vkUpdateDescriptorSetWithTemplate = (PFN_vkUpdateDescriptorSetWithTemplate) load(userptr, "vkUpdateDescriptorSetWithTemplate");
+}
+static void glad_vk_load_VK_VERSION_1_2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_VERSION_1_2) return;
+    glad_vkCmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2) load(userptr, "vkCmdBeginRenderPass2");
+    glad_vkCmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount) load(userptr, "vkCmdDrawIndexedIndirectCount");
+    glad_vkCmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount) load(userptr, "vkCmdDrawIndirectCount");
+    glad_vkCmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2) load(userptr, "vkCmdEndRenderPass2");
+    glad_vkCmdNextSubpass2 = (PFN_vkCmdNextSubpass2) load(userptr, "vkCmdNextSubpass2");
+    glad_vkCreateRenderPass2 = (PFN_vkCreateRenderPass2) load(userptr, "vkCreateRenderPass2");
+    glad_vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress) load(userptr, "vkGetBufferDeviceAddress");
+    glad_vkGetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress) load(userptr, "vkGetBufferOpaqueCaptureAddress");
+    glad_vkGetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress) load(userptr, "vkGetDeviceMemoryOpaqueCaptureAddress");
+    glad_vkGetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue) load(userptr, "vkGetSemaphoreCounterValue");
+    glad_vkResetQueryPool = (PFN_vkResetQueryPool) load(userptr, "vkResetQueryPool");
+    glad_vkSignalSemaphore = (PFN_vkSignalSemaphore) load(userptr, "vkSignalSemaphore");
+    glad_vkWaitSemaphores = (PFN_vkWaitSemaphores) load(userptr, "vkWaitSemaphores");
+}
+static void glad_vk_load_VK_VERSION_1_3( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_VERSION_1_3) return;
+    glad_vkCmdBeginRendering = (PFN_vkCmdBeginRendering) load(userptr, "vkCmdBeginRendering");
+    glad_vkCmdBindVertexBuffers2 = (PFN_vkCmdBindVertexBuffers2) load(userptr, "vkCmdBindVertexBuffers2");
+    glad_vkCmdBlitImage2 = (PFN_vkCmdBlitImage2) load(userptr, "vkCmdBlitImage2");
+    glad_vkCmdCopyBuffer2 = (PFN_vkCmdCopyBuffer2) load(userptr, "vkCmdCopyBuffer2");
+    glad_vkCmdCopyBufferToImage2 = (PFN_vkCmdCopyBufferToImage2) load(userptr, "vkCmdCopyBufferToImage2");
+    glad_vkCmdCopyImage2 = (PFN_vkCmdCopyImage2) load(userptr, "vkCmdCopyImage2");
+    glad_vkCmdCopyImageToBuffer2 = (PFN_vkCmdCopyImageToBuffer2) load(userptr, "vkCmdCopyImageToBuffer2");
+    glad_vkCmdEndRendering = (PFN_vkCmdEndRendering) load(userptr, "vkCmdEndRendering");
+    glad_vkCmdPipelineBarrier2 = (PFN_vkCmdPipelineBarrier2) load(userptr, "vkCmdPipelineBarrier2");
+    glad_vkCmdResetEvent2 = (PFN_vkCmdResetEvent2) load(userptr, "vkCmdResetEvent2");
+    glad_vkCmdResolveImage2 = (PFN_vkCmdResolveImage2) load(userptr, "vkCmdResolveImage2");
+    glad_vkCmdSetCullMode = (PFN_vkCmdSetCullMode) load(userptr, "vkCmdSetCullMode");
+    glad_vkCmdSetDepthBiasEnable = (PFN_vkCmdSetDepthBiasEnable) load(userptr, "vkCmdSetDepthBiasEnable");
+    glad_vkCmdSetDepthBoundsTestEnable = (PFN_vkCmdSetDepthBoundsTestEnable) load(userptr, "vkCmdSetDepthBoundsTestEnable");
+    glad_vkCmdSetDepthCompareOp = (PFN_vkCmdSetDepthCompareOp) load(userptr, "vkCmdSetDepthCompareOp");
+    glad_vkCmdSetDepthTestEnable = (PFN_vkCmdSetDepthTestEnable) load(userptr, "vkCmdSetDepthTestEnable");
+    glad_vkCmdSetDepthWriteEnable = (PFN_vkCmdSetDepthWriteEnable) load(userptr, "vkCmdSetDepthWriteEnable");
+    glad_vkCmdSetEvent2 = (PFN_vkCmdSetEvent2) load(userptr, "vkCmdSetEvent2");
+    glad_vkCmdSetFrontFace = (PFN_vkCmdSetFrontFace) load(userptr, "vkCmdSetFrontFace");
+    glad_vkCmdSetPrimitiveRestartEnable = (PFN_vkCmdSetPrimitiveRestartEnable) load(userptr, "vkCmdSetPrimitiveRestartEnable");
+    glad_vkCmdSetPrimitiveTopology = (PFN_vkCmdSetPrimitiveTopology) load(userptr, "vkCmdSetPrimitiveTopology");
+    glad_vkCmdSetRasterizerDiscardEnable = (PFN_vkCmdSetRasterizerDiscardEnable) load(userptr, "vkCmdSetRasterizerDiscardEnable");
+    glad_vkCmdSetScissorWithCount = (PFN_vkCmdSetScissorWithCount) load(userptr, "vkCmdSetScissorWithCount");
+    glad_vkCmdSetStencilOp = (PFN_vkCmdSetStencilOp) load(userptr, "vkCmdSetStencilOp");
+    glad_vkCmdSetStencilTestEnable = (PFN_vkCmdSetStencilTestEnable) load(userptr, "vkCmdSetStencilTestEnable");
+    glad_vkCmdSetViewportWithCount = (PFN_vkCmdSetViewportWithCount) load(userptr, "vkCmdSetViewportWithCount");
+    glad_vkCmdWaitEvents2 = (PFN_vkCmdWaitEvents2) load(userptr, "vkCmdWaitEvents2");
+    glad_vkCmdWriteTimestamp2 = (PFN_vkCmdWriteTimestamp2) load(userptr, "vkCmdWriteTimestamp2");
+    glad_vkCreatePrivateDataSlot = (PFN_vkCreatePrivateDataSlot) load(userptr, "vkCreatePrivateDataSlot");
+    glad_vkDestroyPrivateDataSlot = (PFN_vkDestroyPrivateDataSlot) load(userptr, "vkDestroyPrivateDataSlot");
+    glad_vkGetDeviceBufferMemoryRequirements = (PFN_vkGetDeviceBufferMemoryRequirements) load(userptr, "vkGetDeviceBufferMemoryRequirements");
+    glad_vkGetDeviceImageMemoryRequirements = (PFN_vkGetDeviceImageMemoryRequirements) load(userptr, "vkGetDeviceImageMemoryRequirements");
+    glad_vkGetDeviceImageSparseMemoryRequirements = (PFN_vkGetDeviceImageSparseMemoryRequirements) load(userptr, "vkGetDeviceImageSparseMemoryRequirements");
+    glad_vkGetPhysicalDeviceToolProperties = (PFN_vkGetPhysicalDeviceToolProperties) load(userptr, "vkGetPhysicalDeviceToolProperties");
+    glad_vkGetPrivateData = (PFN_vkGetPrivateData) load(userptr, "vkGetPrivateData");
+    glad_vkQueueSubmit2 = (PFN_vkQueueSubmit2) load(userptr, "vkQueueSubmit2");
+    glad_vkSetPrivateData = (PFN_vkSetPrivateData) load(userptr, "vkSetPrivateData");
 }
 static void glad_vk_load_VK_KHR_surface( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_VK_KHR_surface) return;
@@ -508,6 +676,9 @@ static int glad_vk_find_core_vulkan( VkPhysicalDevice physical_device) {
     }
 
     GLAD_VK_VERSION_1_0 = (major == 1 && minor >= 0) || major > 1;
+    GLAD_VK_VERSION_1_1 = (major == 1 && minor >= 1) || major > 1;
+    GLAD_VK_VERSION_1_2 = (major == 1 && minor >= 2) || major > 1;
+    GLAD_VK_VERSION_1_3 = (major == 1 && minor >= 3) || major > 1;
 
     return GLAD_MAKE_VERSION(major, minor);
 }
@@ -524,6 +695,9 @@ int gladLoadVulkanUserPtr( VkPhysicalDevice physical_device, GLADuserptrloadfunc
     }
 
     glad_vk_load_VK_VERSION_1_0(load, userptr);
+    glad_vk_load_VK_VERSION_1_1(load, userptr);
+    glad_vk_load_VK_VERSION_1_2(load, userptr);
+    glad_vk_load_VK_VERSION_1_3(load, userptr);
 
     if (!glad_vk_find_extensions_vulkan( physical_device)) return 0;
     glad_vk_load_VK_KHR_surface(load, userptr);
@@ -620,57 +794,95 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkAllocateMemory",
     "vkBeginCommandBuffer",
     "vkBindBufferMemory",
+    "vkBindBufferMemory2",
     "vkBindImageMemory",
+    "vkBindImageMemory2",
     "vkCmdBeginQuery",
     "vkCmdBeginRenderPass",
+    "vkCmdBeginRenderPass2",
+    "vkCmdBeginRendering",
     "vkCmdBindDescriptorSets",
     "vkCmdBindIndexBuffer",
     "vkCmdBindPipeline",
     "vkCmdBindVertexBuffers",
+    "vkCmdBindVertexBuffers2",
     "vkCmdBlitImage",
+    "vkCmdBlitImage2",
     "vkCmdClearAttachments",
     "vkCmdClearColorImage",
     "vkCmdClearDepthStencilImage",
     "vkCmdCopyBuffer",
+    "vkCmdCopyBuffer2",
     "vkCmdCopyBufferToImage",
+    "vkCmdCopyBufferToImage2",
     "vkCmdCopyImage",
+    "vkCmdCopyImage2",
     "vkCmdCopyImageToBuffer",
+    "vkCmdCopyImageToBuffer2",
     "vkCmdCopyQueryPoolResults",
     "vkCmdDispatch",
+    "vkCmdDispatchBase",
     "vkCmdDispatchIndirect",
     "vkCmdDraw",
     "vkCmdDrawIndexed",
     "vkCmdDrawIndexedIndirect",
+    "vkCmdDrawIndexedIndirectCount",
     "vkCmdDrawIndirect",
+    "vkCmdDrawIndirectCount",
     "vkCmdEndQuery",
     "vkCmdEndRenderPass",
+    "vkCmdEndRenderPass2",
+    "vkCmdEndRendering",
     "vkCmdExecuteCommands",
     "vkCmdFillBuffer",
     "vkCmdNextSubpass",
+    "vkCmdNextSubpass2",
     "vkCmdPipelineBarrier",
+    "vkCmdPipelineBarrier2",
     "vkCmdPushConstants",
     "vkCmdResetEvent",
+    "vkCmdResetEvent2",
     "vkCmdResetQueryPool",
     "vkCmdResolveImage",
+    "vkCmdResolveImage2",
     "vkCmdSetBlendConstants",
+    "vkCmdSetCullMode",
     "vkCmdSetDepthBias",
+    "vkCmdSetDepthBiasEnable",
     "vkCmdSetDepthBounds",
+    "vkCmdSetDepthBoundsTestEnable",
+    "vkCmdSetDepthCompareOp",
+    "vkCmdSetDepthTestEnable",
+    "vkCmdSetDepthWriteEnable",
+    "vkCmdSetDeviceMask",
     "vkCmdSetEvent",
+    "vkCmdSetEvent2",
+    "vkCmdSetFrontFace",
     "vkCmdSetLineWidth",
+    "vkCmdSetPrimitiveRestartEnable",
+    "vkCmdSetPrimitiveTopology",
+    "vkCmdSetRasterizerDiscardEnable",
     "vkCmdSetScissor",
+    "vkCmdSetScissorWithCount",
     "vkCmdSetStencilCompareMask",
+    "vkCmdSetStencilOp",
     "vkCmdSetStencilReference",
+    "vkCmdSetStencilTestEnable",
     "vkCmdSetStencilWriteMask",
     "vkCmdSetViewport",
+    "vkCmdSetViewportWithCount",
     "vkCmdUpdateBuffer",
     "vkCmdWaitEvents",
+    "vkCmdWaitEvents2",
     "vkCmdWriteTimestamp",
+    "vkCmdWriteTimestamp2",
     "vkCreateBuffer",
     "vkCreateBufferView",
     "vkCreateCommandPool",
     "vkCreateComputePipelines",
     "vkCreateDescriptorPool",
     "vkCreateDescriptorSetLayout",
+    "vkCreateDescriptorUpdateTemplate",
     "vkCreateEvent",
     "vkCreateFence",
     "vkCreateFramebuffer",
@@ -679,9 +891,12 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkCreateImageView",
     "vkCreatePipelineCache",
     "vkCreatePipelineLayout",
+    "vkCreatePrivateDataSlot",
     "vkCreateQueryPool",
     "vkCreateRenderPass",
+    "vkCreateRenderPass2",
     "vkCreateSampler",
+    "vkCreateSamplerYcbcrConversion",
     "vkCreateSemaphore",
     "vkCreateShaderModule",
     "vkCreateSwapchainKHR",
@@ -690,6 +905,7 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkDestroyCommandPool",
     "vkDestroyDescriptorPool",
     "vkDestroyDescriptorSetLayout",
+    "vkDestroyDescriptorUpdateTemplate",
     "vkDestroyDevice",
     "vkDestroyEvent",
     "vkDestroyFence",
@@ -699,9 +915,11 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkDestroyPipeline",
     "vkDestroyPipelineCache",
     "vkDestroyPipelineLayout",
+    "vkDestroyPrivateDataSlot",
     "vkDestroyQueryPool",
     "vkDestroyRenderPass",
     "vkDestroySampler",
+    "vkDestroySamplerYcbcrConversion",
     "vkDestroySemaphore",
     "vkDestroyShaderModule",
     "vkDestroySwapchainKHR",
@@ -711,20 +929,34 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkFreeCommandBuffers",
     "vkFreeDescriptorSets",
     "vkFreeMemory",
+    "vkGetBufferDeviceAddress",
     "vkGetBufferMemoryRequirements",
+    "vkGetBufferMemoryRequirements2",
+    "vkGetBufferOpaqueCaptureAddress",
+    "vkGetDescriptorSetLayoutSupport",
+    "vkGetDeviceBufferMemoryRequirements",
+    "vkGetDeviceGroupPeerMemoryFeatures",
     "vkGetDeviceGroupPresentCapabilitiesKHR",
     "vkGetDeviceGroupSurfacePresentModesKHR",
+    "vkGetDeviceImageMemoryRequirements",
+    "vkGetDeviceImageSparseMemoryRequirements",
     "vkGetDeviceMemoryCommitment",
+    "vkGetDeviceMemoryOpaqueCaptureAddress",
     "vkGetDeviceProcAddr",
     "vkGetDeviceQueue",
+    "vkGetDeviceQueue2",
     "vkGetEventStatus",
     "vkGetFenceStatus",
     "vkGetImageMemoryRequirements",
+    "vkGetImageMemoryRequirements2",
     "vkGetImageSparseMemoryRequirements",
+    "vkGetImageSparseMemoryRequirements2",
     "vkGetImageSubresourceLayout",
     "vkGetPipelineCacheData",
+    "vkGetPrivateData",
     "vkGetQueryPoolResults",
     "vkGetRenderAreaGranularity",
+    "vkGetSemaphoreCounterValue",
     "vkGetSwapchainImagesKHR",
     "vkInvalidateMappedMemoryRanges",
     "vkMapMemory",
@@ -732,16 +964,23 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkQueueBindSparse",
     "vkQueuePresentKHR",
     "vkQueueSubmit",
+    "vkQueueSubmit2",
     "vkQueueWaitIdle",
     "vkResetCommandBuffer",
     "vkResetCommandPool",
     "vkResetDescriptorPool",
     "vkResetEvent",
     "vkResetFences",
+    "vkResetQueryPool",
     "vkSetEvent",
+    "vkSetPrivateData",
+    "vkSignalSemaphore",
+    "vkTrimCommandPool",
     "vkUnmapMemory",
+    "vkUpdateDescriptorSetWithTemplate",
     "vkUpdateDescriptorSets",
     "vkWaitForFences",
+    "vkWaitSemaphores",
 };
 
 static int glad_vulkan_is_device_function(const char *name) {
