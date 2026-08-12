@@ -618,7 +618,6 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 	c_lib.installHeadersDirectory(harfbuzz.path("src"), "", .{});
 	c_lib.root_module.addCMacro("HAVE_FREETYPE", "1");
 	c_lib.root_module.addCSourceFile(.{.file = harfbuzz.path("src/harfbuzz.cc"), .flags = flags});
-	c_lib.root_module.link_libcpp = true;
 }
 
 pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) !void {
@@ -747,14 +746,18 @@ pub fn addFileDialog(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []con
 pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8) void {
 	const cgltf = b.dependency("cgltf", .{});
 	const stb = b.dependency("stb", .{});
+	const vma = b.dependency("VulkanMemoryAllocator", .{});
 
 	c_lib.root_module.addIncludePath(cgltf.path(""));
 	c_lib.root_module.addIncludePath(stb.path(""));
+	c_lib.root_module.addIncludePath(vma.path("include"));
 	c_lib.installHeader(cgltf.path("cgltf.h"), "cgltf.h");
 	c_lib.installHeader(stb.path("stb_image_write.h"), "stb/stb_image_write.h");
 	c_lib.installHeader(stb.path("stb_image.h"), "stb/stb_image.h");
+	c_lib.installHeader(vma.path("include/vk_mem_alloc.h"), "vk_mem_alloc.h");
+	c_lib.installHeader(b.path("include/vk_mem_alloc_extended.h"), "vk_mem_alloc_extended.h");
 
-	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb.c"}, .flags = flags});
+	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb.c", "lib/vma.cpp"}, .flags = flags});
 }
 
 pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
@@ -764,6 +767,8 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 			.target = target,
 			.optimize = optimize,
 			.pic = true, // Needed for thread sanitizer
+			.link_libc = true,
+			.link_libcpp = true,
 		}),
 	});
 

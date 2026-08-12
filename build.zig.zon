@@ -68,5 +68,9 @@
 			.url = "git+https://git.code.sf.net/p/tinyfiledialogs/code#eaea99294f266149104e67e3f4e29db6ea03a1eb",
 			.hash = "N-V-__8AADsZFAC9Ut0V_OXjd_w2LO5zM1W1N5FP9W1bJ_m4",
 		},
+		.VulkanMemoryAllocator = .{
+			.url = "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.4.0.tar.gz",
+			.hash = "N-V-__8AAG7MQQCXcvOh0VkmSXF9qW5CTbgporOoN7XDgeov",
+		},
 	},
 }
