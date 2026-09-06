@@ -658,7 +658,7 @@ pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, targ
 		switch (os) {
 			.windows => &.{"win32_module.c", "win32_time.c", "win32_thread.c"},
 			.linux => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
-			.macos => &.{"cocoa_time.c", "posix_module.c", "posix_thread.c"},
+			.macos => &.{"macos_time.c", "posix_module.c", "posix_thread.c"},
 			else => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
 		},
 		switch (ws) {

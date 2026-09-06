@@ -29,8 +29,8 @@
 			.hash = "N-V-__8AAJT_kQD6CFBMUVgvy7My2RpKDIGBj0RasjO4C2io",
 		},
 		.@"MoltenVK-macos" = .{
-			.url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.1/MoltenVK-macos.tar",
-			.hash = "N-V-__8AACUMVgOPCw3yl1KPWIkLS6xEGBjWnZgoMvNigQmj",
+			.url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.2/MoltenVK-macos.tar",
+			.hash = "N-V-__8AAE_YiwPIE_JJGNssqD-hldlwyTTI7tQDZMXFtb9m",
 		},
 		.@"Vulkan-Utility-Libraries" = .{
 			.url = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/v1.4.350.tar.gz",
