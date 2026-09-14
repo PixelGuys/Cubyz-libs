@@ -1,6 +1,4 @@
-# This is a basic workflow that is manually triggered
-
-name: Format Check
+name: Compilation and Format Check
 
 on:
   push:
@@ -22,3 +20,18 @@ jobs:
             git diff --color=always;
             exit 1;
           fi
+  compilation_check:
+    runs-on: macos-latest
+    name: Compilation Check
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "VERSION=$(cat .zigversion)" >> $GITHUB_ENV
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.VERSION }}
+      - run: zig build -Dtarget=x86_64-linux-musl
+      - run: zig build -Dtarget=aarch64-linux-musl
+      - run: zig build -Dtarget=x86_64-windows-gnu
+      - run: zig build -Dtarget=aarch64-windows-gnu
+      - run: zig build -Dtarget=x86_64-macos-none
+      - run: zig build -Dtarget=aarch64-macos-none
