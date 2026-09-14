@@ -1,0 +1,39 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+    env:
+      tag: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "VERSION=$(cat .zigversion)" >> $GITHUB_ENV
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.VERSION }}
+      - run: zig build release
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+              cubyz_deps_headers.tar.gz \
+              cubyz_deps_x86_64-linux-musl.tar.gz \
+              cubyz_deps_aarch64-linux-musl.tar.gz \
+              cubyz_deps_x86_64-windows-gnu.tar.gz \
+              cubyz_deps_aarch64-windows-gnu.tar.gz \
+              cubyz_deps_x86_64-macos-none.tar.gz \
+              cubyz_deps_aarch64-macos-none.tar.gz
+          gh release
