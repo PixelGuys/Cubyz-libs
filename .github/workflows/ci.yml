@@ -1,4 +1,4 @@
-name: Format Check
+name: Compilation and Format Check
 
 on:
   push:
