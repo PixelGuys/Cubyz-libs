@@ -11,7 +11,7 @@ permissions:
 jobs:
   release:
     name: Create release
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
       tag: ${{ github.ref_name }}
     steps:
