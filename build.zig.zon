@@ -1,77 +1,77 @@
 .{
-    .name = .cubyz_libs,
-    .fingerprint = 0x309b84abf3e7800f,
-    .minimum_zig_version = "0.16.0",
-    .version = "0.0.0",
-    .paths = .{""},
-    .dependencies = .{
-        .glfw = .{
-            .url = "git+https://github.com/Wunka/glfw.git#8b73b48b27d5e216508fc42b7e203e4bb4e8e62f",
-            .hash = "glfw-0.0.0-R5AeUsEIGgACe4VDOysoOTnlfW7iyunNvMQiN8PWAzJ1",
-        },
-        .harfbuzz = .{
-            .url = "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/14.2.0.tar.gz",
-            .hash = "N-V-__8AANNd5gWPznhuFRVWGtfvc83FAFweN1R__C1J_BaG",
-        },
-        .freetype = .{
-            .url = "https://github.com/freetype/freetype/archive/refs/tags/VER-2-14-3.tar.gz",
-            .hash = "N-V-__8AAGJsqgDtM-7hGxs3GiSanZStnUfFiuHmioYRK3hN",
-        },
-        .glslang = .{
-            .url = "https://codeberg.org/Games-by-Mason/glslang_zig/archive/v1.0.1+1.4.309.tar.gz",
-            .hash = "glslang-1.0.1+1.4.309-eMn68GHJCQDNzeSpilELiLfzDAVrjQGkGryaCcCzFTFY",
-        },
-        .@"Vulkan-Headers" = .{
-            .url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.350.tar.gz",
-            .hash = "N-V-__8AAPnEbQK6L3hGtJefy0xZjeg7KOxIEj8_obZC2_lF",
-        },
-        .@"Vulkan-Loader" = .{
-            .url = "https://github.com/KhronosGroup/Vulkan-Loader/archive/refs/tags/v1.4.350.tar.gz",
-            .hash = "N-V-__8AAJT_kQD6CFBMUVgvy7My2RpKDIGBj0RasjO4C2io",
-        },
-        .@"MoltenVK-macos" = .{
-            .url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.2/MoltenVK-macos.tar",
-            .hash = "N-V-__8AAE_YiwPIE_JJGNssqD-hldlwyTTI7tQDZMXFtb9m",
-        },
-        .@"Vulkan-Utility-Libraries" = .{
-            .url = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/v1.4.350.tar.gz",
-            .hash = "N-V-__8AAFvqggAtCu4-YMTGMhyZ-NAPaihjpO5B6NxwMijB",
-        },
-        .@"SPIRV-Headers" = .{
-            .url = "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/vulkan-sdk-1.4.350.0.tar.gz",
-            .hash = "N-V-__8AAOWAPQDTQrudoJ1kyAzjkh3mLopx0pq3uHSy2LDi",
-        },
-        .@"Vulkan-ValidationLayers" = .{
-            .url = "https://github.com/KhronosGroup/Vulkan-ValidationLayers/archive/refs/tags/v1.4.350.tar.gz",
-            .hash = "N-V-__8AABB5aAPxBKdAVDq8fJjAj_2gMEMzcgtrlOKSu-Ab",
-        },
-        .cgltf = .{
-            .url = "https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz",
-            .hash = "N-V-__8AAKFjBABZzn84N4iiLQyNQSMVsv5XBJSvZTPcQL2H",
-        },
-        .miniaudio = .{
-            .url = "https://github.com/mackron/miniaudio/archive/refs/tags/0.11.25.tar.gz",
-            .hash = "N-V-__8AAHNWwAASlNuYbrP1-3UqXdwbYvZ_6nIJhpAcRMfi",
-        },
-        .mbedtls = .{
-            .url = "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/mbedtls-4.0.0.tar.gz",
-            .hash = "N-V-__8AAKIwiADtY89ifMh8C6X0PHvyBULclU19OYMsiDg_",
-        },
-        .tf_psa_crypto = .{
-            .url = "https://github.com/Mbed-TLS/TF-PSA-Crypto/archive/refs/tags/tf-psa-crypto-1.0.0.tar.gz",
-            .hash = "N-V-__8AAOuqOgGAlxfU32chMWurMwBPZACZk-9MdknRMDIM",
-        },
-        .stb = .{
-            .url = "https://github.com/nothings/stb/archive/31c1ad37456438565541f4919958214b6e762fb4.tar.gz",
-            .hash = "N-V-__8AAN1DTgAKvlSQnjJwSg4ZY2JP5OHmzKOcA4BewA4Y",
-        },
-        .tinyfiledialogs = .{
-            .url = "git+https://git.code.sf.net/p/tinyfiledialogs/code#eaea99294f266149104e67e3f4e29db6ea03a1eb",
-            .hash = "N-V-__8AADsZFAC9Ut0V_OXjd_w2LO5zM1W1N5FP9W1bJ_m4",
-        },
-        .VulkanMemoryAllocator = .{
-            .url = "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.4.0.tar.gz",
-            .hash = "N-V-__8AAG7MQQCXcvOh0VkmSXF9qW5CTbgporOoN7XDgeov",
-        },
-    },
+	.name = .cubyz_libs,
+	.fingerprint = 0x309b84abf3e7800f,
+	.minimum_zig_version = "0.16.0",
+	.version = "0.0.0",
+	.paths = .{""},
+	.dependencies = .{
+		.glfw = .{
+			.url = "git+https://github.com/Wunka/glfw.git#8b73b48b27d5e216508fc42b7e203e4bb4e8e62f",
+			.hash = "glfw-0.0.0-R5AeUsEIGgACe4VDOysoOTnlfW7iyunNvMQiN8PWAzJ1",
+		},
+		.harfbuzz = .{
+			.url = "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/14.2.0.tar.gz",
+			.hash = "N-V-__8AANNd5gWPznhuFRVWGtfvc83FAFweN1R__C1J_BaG",
+		},
+		.freetype = .{
+			.url = "https://github.com/freetype/freetype/archive/refs/tags/VER-2-14-3.tar.gz",
+			.hash = "N-V-__8AAGJsqgDtM-7hGxs3GiSanZStnUfFiuHmioYRK3hN",
+		},
+		.glslang = .{
+			.url = "https://codeberg.org/Games-by-Mason/glslang_zig/archive/v1.0.1+1.4.309.tar.gz",
+			.hash = "glslang-1.0.1+1.4.309-eMn68GHJCQDNzeSpilELiLfzDAVrjQGkGryaCcCzFTFY",
+		},
+		.@"Vulkan-Headers" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AAPnEbQK6L3hGtJefy0xZjeg7KOxIEj8_obZC2_lF",
+		},
+		.@"Vulkan-Loader" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Loader/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AAJT_kQD6CFBMUVgvy7My2RpKDIGBj0RasjO4C2io",
+		},
+		.@"MoltenVK-macos" = .{
+			.url = "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.2/MoltenVK-macos.tar",
+			.hash = "N-V-__8AAE_YiwPIE_JJGNssqD-hldlwyTTI7tQDZMXFtb9m",
+		},
+		.@"Vulkan-Utility-Libraries" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AAFvqggAtCu4-YMTGMhyZ-NAPaihjpO5B6NxwMijB",
+		},
+		.@"SPIRV-Headers" = .{
+			.url = "https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/vulkan-sdk-1.4.350.0.tar.gz",
+			.hash = "N-V-__8AAOWAPQDTQrudoJ1kyAzjkh3mLopx0pq3uHSy2LDi",
+		},
+		.@"Vulkan-ValidationLayers" = .{
+			.url = "https://github.com/KhronosGroup/Vulkan-ValidationLayers/archive/refs/tags/v1.4.350.tar.gz",
+			.hash = "N-V-__8AABB5aAPxBKdAVDq8fJjAj_2gMEMzcgtrlOKSu-Ab",
+		},
+		.cgltf = .{
+			.url = "https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz",
+			.hash = "N-V-__8AAKFjBABZzn84N4iiLQyNQSMVsv5XBJSvZTPcQL2H",
+		},
+		.miniaudio = .{
+			.url = "https://github.com/mackron/miniaudio/archive/refs/tags/0.11.25.tar.gz",
+			.hash = "N-V-__8AAHNWwAASlNuYbrP1-3UqXdwbYvZ_6nIJhpAcRMfi",
+		},
+		.mbedtls = .{
+			.url = "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/mbedtls-4.0.0.tar.gz",
+			.hash = "N-V-__8AAKIwiADtY89ifMh8C6X0PHvyBULclU19OYMsiDg_",
+		},
+		.tf_psa_crypto = .{
+			.url = "https://github.com/Mbed-TLS/TF-PSA-Crypto/archive/refs/tags/tf-psa-crypto-1.0.0.tar.gz",
+			.hash = "N-V-__8AAOuqOgGAlxfU32chMWurMwBPZACZk-9MdknRMDIM",
+		},
+		.stb = .{
+			.url = "https://github.com/nothings/stb/archive/31c1ad37456438565541f4919958214b6e762fb4.tar.gz",
+			.hash = "N-V-__8AAN1DTgAKvlSQnjJwSg4ZY2JP5OHmzKOcA4BewA4Y",
+		},
+		.tinyfiledialogs = .{
+			.url = "git+https://git.code.sf.net/p/tinyfiledialogs/code#eaea99294f266149104e67e3f4e29db6ea03a1eb",
+			.hash = "N-V-__8AADsZFAC9Ut0V_OXjd_w2LO5zM1W1N5FP9W1bJ_m4",
+		},
+		.VulkanMemoryAllocator = .{
+			.url = "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.4.0.tar.gz",
+			.hash = "N-V-__8AAG7MQQCXcvOh0VkmSXF9qW5CTbgporOoN7XDgeov",
+		},
+	},
 }
