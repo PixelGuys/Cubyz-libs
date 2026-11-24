@@ -21,7 +21,7 @@ jobs:
             exit 1;
           fi
   compilation_check:
-    runs-on: xcode-27
+    runs-on: macos-latest
     name: Compilation Check
     steps:
       - uses: actions/checkout@v3
