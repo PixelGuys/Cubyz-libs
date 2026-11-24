@@ -29,8 +29,8 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: ${{ env.VERSION }}
-      - run: zig build -Dtarget=x86_64-macos
-      - run: zig build -Dtarget=aarch64-macos
+      - run: zig build -Dtarget=x86_64-native
+      - run: zig build -Dtarget=aarch64-native
       - run: zig build -Dtarget=x86_64-linux-musl
       - run: zig build -Dtarget=aarch64-linux-musl
       - run: zig build -Dtarget=x86_64-windows-gnu
