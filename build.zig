@@ -620,63 +620,6 @@ pub fn addFreetypeAndHarfbuzz(b: *std.Build, c_lib: *std.Build.Step.Compile, tar
 	c_lib.root_module.addCSourceFile(.{.file = harfbuzz.path("src/harfbuzz.cc"), .flags = flags});
 }
 
-pub inline fn addGLFWSources(b: *std.Build, c_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, flags: []const []const u8) !void {
-	const glfw = b.dependency("glfw", .{});
-	const root = glfw.path("src");
-	const os = target.result.os.tag;
-
-	const WinSys = enum { win32, x11, cocoa };
-
-	// TODO: Wayland
-	const ws: WinSys = switch (os) {
-		.windows => .win32,
-		.linux => .x11,
-		.macos => .cocoa,
-		// There are a surprising number of platforms zig supports.
-		// File a bug report if Cubyz doesn't work on yours.
-		else => blk: {
-			std.log.warn("Operating system ({}) is untested.", .{os});
-			break :blk .x11;
-		},
-	};
-	const wsFlag = switch (ws) {
-		.win32 => "-D_GLFW_WIN32",
-		.x11 => "-D_GLFW_X11",
-		.cocoa => "-D_GLFW_COCOA",
-	};
-	var allFlags = try std.ArrayList([]const u8).initCapacity(b.allocator, 0);
-	try allFlags.appendSlice(b.allocator, flags);
-	try allFlags.append(b.allocator, wsFlag);
-	if (os == .linux) {
-		try allFlags.append(b.allocator, "-D_GNU_SOURCE");
-	}
-
-	c_lib.root_module.addIncludePath(glfw.path("include"));
-	c_lib.installHeader(glfw.path("include/GLFW/glfw3.h"), "GLFW/glfw3.h");
-	const fileses: [3][]const []const u8 = .{
-		&.{"context.c", "init.c", "input.c", "monitor.c", "platform.c", "vulkan.c", "window.c", "egl_context.c", "osmesa_context.c", "null_init.c", "null_monitor.c", "null_window.c", "null_joystick.c"},
-		switch (os) {
-			.windows => &.{"win32_module.c", "win32_time.c", "win32_thread.c"},
-			.linux => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
-			.macos => &.{"macos_time.c", "posix_module.c", "posix_thread.c"},
-			else => &.{"posix_module.c", "posix_time.c", "posix_thread.c", "linux_joystick.c"},
-		},
-		switch (ws) {
-			.win32 => &.{"win32_init.c", "win32_joystick.c", "win32_monitor.c", "win32_window.c", "wgl_context.c"},
-			.x11 => &.{"x11_init.c", "x11_monitor.c", "x11_window.c", "xkb_unicode.c", "glx_context.c", "posix_poll.c"},
-			.cocoa => &.{"cocoa_init.m", "cocoa_joystick.m", "cocoa_monitor.m", "cocoa_window.m", "nsgl_context.m"},
-		},
-	};
-
-	for (fileses) |files| {
-		c_lib.root_module.addCSourceFiles(.{
-			.root = root,
-			.files = files,
-			.flags = allFlags.items,
-		});
-	}
-}
-
 pub fn addMiniaudioAndStbVorbis(b: *std.Build, c_lib: *std.Build.Step.Compile, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) void {
 	const miniaudio = b.dependency("miniaudio", .{});
 	c_lib.root_module.addIncludePath(miniaudio.path(""));
@@ -798,7 +741,6 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 	if (target.result.os.tag == .macos) {
 		try addVulkanApple(b, step, c_lib, name, target, flags, replace_tool);
 	}
-	try addGLFWSources(b, c_lib, target, flags);
 	addMbedTls(b, c_lib, flags);
 	addFileDialog(b, c_lib, flags);
 	c_lib.root_module.addCSourceFile(.{.file = b.path("lib/gl.c"), .flags = flags});
@@ -821,6 +763,15 @@ pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const 
 		artifact.root_module.pic = true; // Needed for thread sanitizer
 		step.dependOn(&b.addInstallArtifact(artifact, options).step);
 	}
+	const glfw = b.dependency("glfw", .{
+		.target = target,
+		.optimize = optimize,
+		.x11 = target.result.os.tag == .linux,
+		.wayland = target.result.os.tag == .linux,
+		// on macos we can use the native option, so that we don't have to download the xcode dependency
+		.native = target.result.os.tag == .macos and builtin.os.tag == .macos,
+	});
+	step.dependOn(&b.addInstallArtifact(glfw.artifact("glfw"), options).step);
 
 	return c_lib;
 }
