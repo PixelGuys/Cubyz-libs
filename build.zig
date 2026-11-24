@@ -703,7 +703,7 @@ pub inline fn addHeaderOnlyLibs(b: *std.Build, c_lib: *std.Build.Step.Compile, f
 	c_lib.root_module.addCSourceFiles(.{.files = &[_][]const u8{"lib/cgltf.c", "lib/stb.c", "lib/vma.cpp"}, .flags = flags});
 }
 
-pub inline fn makeCubyzLibs(b: *std.y, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
+pub inline fn makeCubyzLibs(b: *std.Build, step: *std.Build.Step, name: []const u8, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, flags: []const []const u8, replace_tool: *std.Build.Step.Compile) !*std.Build.Step.Compile {
 	const c_lib = b.addLibrary(.{
 		.name = name,
 		.root_module = b.createModule(.{
@@ -770,9 +770,6 @@ pub inline fn makeCubyzLibs(b: *std.y, step: *std.Build.Step, name: []const u8, 
 		.wayland = target.result.os.tag == .linux,
 		.native = target.result.os.tag.isDarwin() and target.query.isNativeOs() and target.query.isNativeAbi(),
 	});
-        if(target.result.os.tag == .macos) {
-            c_lib.root_module.linkSystemLibrary("objc", .{.use_pkg_config = .no});
-        }
 	step.dependOn(&b.addInstallArtifact(glfw.artifact("glfw"), options).step);
 
 	return c_lib;
