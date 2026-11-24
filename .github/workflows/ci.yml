@@ -2,7 +2,7 @@ name: Compilation and Format Check
 
 on:
   push:
-    branches: [ "master", "wayland" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
