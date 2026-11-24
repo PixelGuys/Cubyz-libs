@@ -6,8 +6,8 @@
 	.paths = .{""},
 	.dependencies = .{
 		.glfw = .{
-			.url = "git+https://github.com/allyourcodebase/glfw.git#74b53d74a79f66af4e0c620dd37a38796f015770",
-			.hash = "glfw-0.0.0-R5AeUroIGgByZTBiH9I-eE2y7IQ5H3Vmqi9_67OFLOZ2",
+			.url = "git+https://github.com/Wunka/glfw.git#8b73b48b27d5e216508fc42b7e203e4bb4e8e62f",
+			.hash = "glfw-0.0.0-R5AeUsEIGgACe4VDOysoOTnlfW7iyunNvMQiN8PWAzJ1",
 		},
 		.harfbuzz = .{
 			.url = "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/14.2.0.tar.gz",
