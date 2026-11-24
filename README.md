@@ -3,7 +3,7 @@ Used to generate precompiled-binaries of the C libraries used in Cubyz:
 - [harfbuzz](https://github.com/harfbuzz/harfbuzz)
 - [freetype](https://github.com/freetype/freetype/)
 - [glslang](https://codeberg.org/Games-by-Mason/glslang_zig/)
-- [glfw](https://github.com/glfw/glfw)
+- [glfw](https://github.com/allyourcodebase/glfw)
 - [glad](https://gen.glad.sh/)
 - [miniaudio](https://github.com/mackron/miniaudio)
 - [stb_image, stb_image_write, stb_vorbis](https://github.com/nothings/stb)
